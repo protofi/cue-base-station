@@ -96,7 +96,6 @@ export default class Bluetooth {
 
   private deviceFound(discPeripheral: Noble.Peripheral) {
     if (!this.scanFilter(discPeripheral)) {
-      console.log(" - Unknown peripheral found: " + discPeripheral.advertisement.localName);
       return;
     }
 
@@ -115,30 +114,17 @@ export default class Bluetooth {
     const serviceUuids: string[] = advertisement.serviceUuids;
     const serviceData = advertisement.serviceData;
 
+    /**
+     * Investigate service data, to see if audio or button trigger is present. 
+     */
     if (serviceData) {
-      console.log("* This is my service data:");
+      console.log("* Cue peripheral found, with service data:");
       for (const i in serviceData) {
         if (serviceData.hasOwnProperty(i)) {
           const serviceDataJSONArray = JSON.parse(JSON.stringify(serviceData));
           console.log(" -", serviceDataJSONArray[i].uuid);
         }
       }
-    }
-
-    if (localName) {
-      console.log(' - Local Name        = ' + localName);
-    }
-
-    if (txPowerLevel) {
-      console.log(' - RSSI              = ' + txPowerLevel);
-    }
-
-    if (manufacturerData) {
-      console.log(' - Manufacturer Data = ' + manufacturerData.toString('hex'));
-    }
-
-    if (serviceUuids && serviceUuids.length) {
-      console.log(' - Service UUIDs     = ' + serviceUuids);
     }
 
     const serviceDataJSONArray = JSON.parse(JSON.stringify(discPeripheral.advertisement.serviceData));
