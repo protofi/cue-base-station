@@ -1,0 +1,19 @@
+# Temporary files.
+.#*
+
+# Log files.
+*.log
+
+# Don't push node_modules - we want the build server to install these.
+node_modules/
+
+.vscode
+
+#OSX hidden metadata file
+.DS_Store
+
+data
+
+dist
+coverage
+.nyc_output
