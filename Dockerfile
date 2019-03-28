@@ -9,6 +9,17 @@ FROM balenalib/raspberrypi3-node:8
 
 RUN install_packages curl
 
+RUN apt-get update && apt-get install -y \
+  build-essential -y \
+  bluetooth \
+  bluez \
+  libbluetooth-dev \
+  libudev-dev \
+  libdbus-1-dev \
+  libglib2.0-dev \
+  libical-dev \
+  libreadline-dev
+
 # Install the google cloud SDK
 RUN export CLOUD_SDK_REPO="cloud-sdk-stretch" && \
     echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -19,6 +30,12 @@ RUN export CLOUD_SDK_REPO="cloud-sdk-stretch" && \
 RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# bluez update from 5.43 to 5.50
+RUN wget http://www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz
+RUN tar xvf bluez-5.50.tar.xz
+RUN cd bluez-5.50 && ./configure --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc --localstatedir=/var --enable-experimental && make -j4 && make install
+
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
