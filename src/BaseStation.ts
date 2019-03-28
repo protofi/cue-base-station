@@ -13,7 +13,7 @@ export default class BaseStation {
     private deviceUUIDPrefix: string    = process.env.DEVICE_UUID_PREFIX
 
     // for now, this is a hardcoded string, but we should probably have a map of allowed peripherals
-    private allowedPeripheralName: string = "home-cue";
+    private allowedPeripheralName: string = "home-cue"
 
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
@@ -22,7 +22,7 @@ export default class BaseStation {
 
         this.websocket = websocket
 
-        this.bluetooth = bluetooth;
+        this.bluetooth = bluetooth
 
         this.mountHooks()
     }
@@ -50,7 +50,7 @@ export default class BaseStation {
         })
 
         this.bluetooth.setScanFilter((peripheral: Noble.Peripheral) => {
-            return peripheral.advertisement.localName === this.allowedPeripheralName;
+            return peripheral.advertisement.localName === this.allowedPeripheralName
           });
 
         this.bluetooth.scan();
@@ -76,19 +76,19 @@ export default class BaseStation {
         this.pubSub.onError(this.errorHandler)
 
         this.bluetooth.onDeviceFound((deviceID: string, servicesMap: Map<string, Noble.Service>) => {
-            console.log("Found device");
+            console.log("Found device")
         });
       
         this.bluetooth.onConnectHangup(() => {
-            console.log("Connecting to peripheral failed, we should restart everything now");
+            console.log("Connecting to peripheral failed, we should restart everything now")
           });
       
         this.bluetooth.onAudioAlert(() => {
-            console.log("- Audio trigger. Should publish notification!");
+            console.log("Audio trigger. Should publish notification!")
           });
       
         this.bluetooth.onPeripheralButton(() => {
-            console.log("Button clicked!");
+            console.log("Button clicked!")
           });
     }
 

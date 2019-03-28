@@ -37,7 +37,6 @@ export default class Bluetooth {
 
     } else {
       console.log("* Radio not powered on, stopping scan");
-      Noble.stopScanning();
       this.scanning = false;
     }
   }
@@ -71,7 +70,7 @@ export default class Bluetooth {
    */
   public disconnectPeripheral() {
     if(!this.peripheral) {
-      console.log(" - disconnectPeripheral: No peripheral to disconnect.");
+      console.log(" Disconnect: No peripheral to disconnect.");
       return;
     }
     this.peripheral.disconnect();
@@ -151,7 +150,6 @@ export default class Bluetooth {
   private onPeripheralDisconnect() {
     this.characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
     this.servicesMap = new Map<string, Noble.Service>();
-    console.log("onPeripheralDisconnect");
     if(this.peripheral) {
       console.log(`* Disconnecting from: ${this.peripheral.advertisement.localName}`);
     }
@@ -163,7 +161,6 @@ export default class Bluetooth {
     if(!this.peripheral) {
       return;
     }
-    console.log("onPeripheralConnect");
     console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
     this.onDeviceFoundCallback(this.peripheral.id, this.servicesMap);
   }
@@ -187,7 +184,6 @@ export default class Bluetooth {
       }
 
       if(currentTimeoutDuration > 10) {
-        console.log("Hang up on peripheral connect, calling connecthangupcallback");
         this.onConnectHangupCallback();
         currentTimeoutDuration = 0;
         clearInterval(ConnectionTimeoutInterval);
