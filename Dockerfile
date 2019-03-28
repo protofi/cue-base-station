@@ -28,7 +28,7 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 
 RUN npm i -g typescript 
-
+RUN npm i bluetooth-hci-socket
 # This install npm dependencies      on the balena build server,
 # making sure to clean up the artifacts it creates in order to reduce the image size.
 RUN JOBS=MAX npm install --production --unsafe-perm && npm cache verify && rm -rf /tmp/*
