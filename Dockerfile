@@ -31,13 +31,6 @@ RUN export CLOUD_SDK_REPO="cloud-sdk-stretch" && \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     apt-get update -y && apt-get install google-cloud-sdk -y
 
-
-# bluez update from 5.43 to 5.50
-RUN wget http://www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz
-RUN tar xvf bluez-5.50.tar.xz
-RUN cd bluez-5.50 && ./configure --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc --localstatedir=/var --enable-experimental && make -j4 && make install
-
-
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
