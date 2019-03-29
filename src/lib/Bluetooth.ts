@@ -111,21 +111,10 @@ export default class Bluetooth {
     const txPowerLevel: number = discPeripheral.rssi;
     const manufacturerData: Buffer = advertisement.manufacturerData;
     const serviceUuids: string[] = advertisement.serviceUuids;
-    const serviceData = advertisement.serviceData;
 
     /**
      * Investigate service data, to see if audio or button trigger is present. 
      */
-    if (serviceData) {
-      console.log("Cue peripheral found, with service data:");
-      for (const i in serviceData) {
-        if (serviceData.hasOwnProperty(i)) {
-          const serviceDataJSONArray = JSON.parse(JSON.stringify(serviceData));
-          console.log(" -", serviceDataJSONArray[i].uuid);
-        }
-      }
-    }
-
     const serviceDataJSONArray = JSON.parse(JSON.stringify(discPeripheral.advertisement.serviceData));
     if(serviceDataJSONArray.length < 1) {
       return;

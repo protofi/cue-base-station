@@ -12,6 +12,7 @@
     "deploy:from": "git push balena",
     "test": "mocha -r ts-node/register test/**/*.test.ts --exit --timeout 5000 || true",
     "test:coverage": "nyc _mocha -r ts-node/register test/**/*.test.ts"
+    
   },
   "nyc": {
     "extension": [
