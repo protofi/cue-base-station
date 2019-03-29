@@ -127,14 +127,15 @@ export default class Bluetooth {
     }
 
     const serviceDataJSONArray = JSON.parse(JSON.stringify(discPeripheral.advertisement.serviceData));
-    const trigger = serviceDataJSONArray[0].uuid;
-
-    if(trigger === "4f49445541") {
-      this.onAudioAlertCallback();
+    if(serviceDataJSONArray[0].uuid !== undefined) {
+      if(serviceDataJSONArray[0].uuid === "4f49445541") {
+        this.onAudioAlertCallback();
+      }
+      if(serviceDataJSONArray[0].uuid === "4e4f54545542") {
+        this.onPeripheralButtonCallback();
+      }
     }
-    if(trigger === "4e4f54545542") {
-      this.onPeripheralButtonCallback();
-    }
+    
     this.connectToPeripheral(discPeripheral);
   }
 
@@ -161,7 +162,7 @@ export default class Bluetooth {
     if(!this.peripheral) {
       return;
     }
-    console.log(`Connected to: ${this.peripheral.advertisement.localName}`);
+    console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
     this.onDeviceFoundCallback(this.peripheral.id, this.servicesMap);
   }
 
