@@ -41,6 +41,7 @@ export default class PubSub {
     private mountHooks()
     {
         this.client.on('connect', (success: any) => {
+            console.log('PUB SUB CONNECTED')
             this.connected(success)
         })
 
