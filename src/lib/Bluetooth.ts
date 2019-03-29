@@ -31,12 +31,12 @@ export default class Bluetooth {
   public scan(): void {
     // only start scanning if the bluetooth module is up and running
     if (Noble.state === "poweredOn" && this.scanning === false) {
-      console.log("* Radio powered on, starting scan");
+      console.log("Radio powered on, starting scan");
       Noble.startScanning([], true); // any service UUID, duplicates allowed
       this.scanning = true;
 
     } else {
-      console.log("* Radio not powered on, stopping scan");
+      console.log("Radio not powered on, stopping scan");
       this.scanning = false;
     }
   }
@@ -70,7 +70,7 @@ export default class Bluetooth {
    */
   public disconnectPeripheral() {
     if(!this.peripheral) {
-      console.log(" Disconnect: No peripheral to disconnect.");
+      console.log("Disconnect: No peripheral to disconnect.");
       return;
     }
     this.peripheral.disconnect();
@@ -86,9 +86,9 @@ export default class Bluetooth {
 
   private onBleStateChange(state: string) {
     if (this.scanning) {
-      console.log(`* Scanner already started, state of ble radio is ${state}`);
+      console.log(`Scanner already started, state of ble radio is ${state}`);
     } else {
-      console.log("* Starting scanner");
+      console.log("Starting scanner");
       this.scan();
     }
   }
@@ -117,7 +117,7 @@ export default class Bluetooth {
      * Investigate service data, to see if audio or button trigger is present. 
      */
     if (serviceData) {
-      console.log("* Cue peripheral found, with service data:");
+      console.log("Cue peripheral found, with service data:");
       for (const i in serviceData) {
         if (serviceData.hasOwnProperty(i)) {
           const serviceDataJSONArray = JSON.parse(JSON.stringify(serviceData));
@@ -151,7 +151,7 @@ export default class Bluetooth {
     this.characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
     this.servicesMap = new Map<string, Noble.Service>();
     if(this.peripheral) {
-      console.log(`* Disconnecting from: ${this.peripheral.advertisement.localName}`);
+      console.log(`Disconnecting from: ${this.peripheral.advertisement.localName}`);
     }
     delete this.peripheral;
     this.scan();
@@ -161,7 +161,7 @@ export default class Bluetooth {
     if(!this.peripheral) {
       return;
     }
-    console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
+    console.log(`Connected to: ${this.peripheral.advertisement.localName}`);
     this.onDeviceFoundCallback(this.peripheral.id, this.servicesMap);
   }
 

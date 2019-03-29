@@ -49,22 +49,24 @@ export default class BaseStation {
             })
         })
 
-        this.bluetooth.setScanFilter((peripheral: Noble.Peripheral) => {
-            return peripheral.advertisement.localName === this.allowedPeripheralName
-          });
-
         this.bluetooth.scan();
     }
 
     private mountHooks(): void
     {
         this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
+            
+            this.bluetooth.setScanFilter((peripheral: Noble.Peripheral) => {
+                return peripheral.advertisement.localName === this.allowedPeripheralName
+            });
 
+            /* this.bluetooth.scan((device) => {
+                this.pubSub.publish(Topics.NEW_SENSOR, {
+                    sensor_UUID : uniqid()
+                })
+            }) */
+            
             // wait for bluetooth device to connect with sensor
-
-            this.pubSub.publish(Topics.NEW_SENSOR, {
-                sensor_UUID : uniqid()
-            })
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
