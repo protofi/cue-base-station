@@ -51,8 +51,6 @@ export default class PubSub {
 
         this.client.on('error', (error: Error) => {
             
-            console.log('ERROR', error.message)
-
             if(error.message.includes(Errors.BAD_USER_PASS) || error.message.includes(Errors.BAD_USER_PASS))
             {
                 console.log('RE-AUTH')
