@@ -96,6 +96,19 @@ export default class BaseStation {
 
     private errorHandler(error: Error): void
     {
-        console.log('ERROR', error)
+        console.log('ERROR', error.message)
     }
 }
+
+process
+.on('unhandledRejection', (reason, p) => {
+    console.error(reason, 'Unhandled Rejection at Promise', p)
+})
+.on('uncaughtException', error => {
+    console.log('')
+    console.log('**********************************************')
+    console.error('Uncaught Exception thrown')
+    console.error(error.message)
+    console.log('**********************************************')
+    console.log('')
+})
