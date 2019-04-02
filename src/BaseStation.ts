@@ -82,7 +82,7 @@ export default class BaseStation {
         this.pubSub.onError(this.errorHandler)
 
         this.bluetooth.onDeviceFound((deviceID: string, servicesMap: Map<string, Noble.Service>) => {
-            console.log("Found device!")
+            console.log("Found device")
         });
       
         this.bluetooth.onConnectHangup(() => {
@@ -90,11 +90,11 @@ export default class BaseStation {
           });
       
         this.bluetooth.onAudioAlert(() => {
-            console.log("Audio trigger. Should publish notification!")
+            console.log("Audio trigger. Should publish notification")
           });
       
         this.bluetooth.onPeripheralButton(() => {
-            console.log("Button clicked!")
+            console.log("Button clicked")
           });
     }
 
