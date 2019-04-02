@@ -59,10 +59,8 @@ elif [ -f /data/service.json ]; then
     echo "CERTIFICATE EXISTS"
 fi
 
-# Create link to persistent file storage
-ln -s /data ./data
-
-
-# hello
+# Copy files from persistent file storage
+mkdir ./data
+cp -r /data ./data
 
 node dist/main.js
