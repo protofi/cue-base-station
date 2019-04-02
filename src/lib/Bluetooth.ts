@@ -18,6 +18,7 @@ export default class Bluetooth {
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
+		console.log("Peripheral found: ", peripheral)
 		if(this.peripheral === undefined) {
 			return false
 		}
@@ -31,7 +32,7 @@ export default class Bluetooth {
 	/**
 	 * Callbacks
 	 */
-	private deviceFoundCallback: (peripheral : Noble.Peripheral) => void
+	private deviceFoundCallback: DeviceFoundCallback
 	private connectHangupCallback: () => void
 	private audioAlertCallback: () => void
 	private peripheralButtonCallback: () => void
@@ -50,37 +51,37 @@ export default class Bluetooth {
 	
 		// only start scanning if the bluetooth module is up and running
 		if (Noble.state === "poweredOn" && this.scanning === false) {
-			console.log("Radio powered on, starting scan");
-			Noble.startScanning([], true); // any service UUID, duplicates allowed
-			this.scanning = true;
+			console.log("Radio powered on, starting scan")
+			Noble.startScanning([], false) // any service UUID, duplicates allowed
+			this.scanning = true
 
 		} else {
-			console.log("Radio not powered on, stopping scan");
-			this.scanning = false;
+			console.log("Radio not powered on, stopping scan")
+			this.scanning = false
 		}
 	}
 
 	public setScanFilter(scanFilter: ScanFilter) {
-		this.scanFilter = scanFilter;
+		this.scanFilter = scanFilter
 	}
 
 	/**
 	 * onDeviceFound
 	 */
 	public onDeviceFound(cb: DeviceFoundCallback): void {
-		this.deviceFoundCallback = cb;
+		this.deviceFoundCallback = cb
 	}
 
 	public onConnectHangup(cb: () => void): void {
-		this.connectHangupCallback = cb;
+		this.connectHangupCallback = cb
 	}
 
 	public onAudioAlert(cb: () => void): void {
-		this.audioAlertCallback = cb;
+		this.audioAlertCallback = cb
 	}
 
 	public onPeripheralButton(cb: () => void): void {
-		this.peripheralButtonCallback = cb;
+		this.peripheralButtonCallback = cb
 	}
 
 	/**
@@ -88,18 +89,18 @@ export default class Bluetooth {
 	 */
 	public disconnectPeripheral() {
 		if(!this.peripheral) {
-		console.log("Disconnect: No peripheral to disconnect.");
-		return;
+		console.log("Disconnect: No peripheral to disconnect.")
+		return
 		}
-		this.peripheral.disconnect();
+		this.peripheral.disconnect()
 	}
 
 	private setScanStarted() {
-		this.scanning = true;
+		this.scanning = true
 	}
 
 	private setScanStopped() {
-		this.scanning = false;
+		this.scanning = false
 	}
 
 	private onBleStateChange(state: string) {
@@ -109,19 +110,19 @@ export default class Bluetooth {
 
 	private deviceFound(discPeripheral: Noble.Peripheral) 
 	{
-		if (!this.scanFilter(discPeripheral)) return;
-		if (discPeripheral.state !== "disconnected") return;
+		if (!this.scanFilter(discPeripheral)) return
+		if (discPeripheral.state !== "disconnected") return
 
 		/**
 		 * Here, we fetch services and data from advertisement,
 		 * that we can access without having to discover services
 		 */
-		const advertisement: Advertisement = discPeripheral.advertisement;
-		console.log("Found cue-home peripheral with advertisement: ", advertisement);
-		const localName: string = advertisement.localName;
-		const txPowerLevel: number = discPeripheral.rssi;
-		const manufacturerData: Buffer = advertisement.manufacturerData;
-		const serviceUuids: string[] = advertisement.serviceUuids;
+		const advertisement: Advertisement = discPeripheral.advertisement
+		console.log("Found cue-home peripheral with advertisement: ", advertisement)
+		const localName: string = advertisement.localName
+		const txPowerLevel: number = discPeripheral.rssi
+		const manufacturerData: Buffer = advertisement.manufacturerData
+		const serviceUuids: string[] = advertisement.serviceUuids
 
 		/**
 		 * Investigate service data, to see if audio or button trigger is present. 
@@ -142,12 +143,6 @@ export default class Bluetooth {
 			this.peripheralButtonCallback();
 		}
 		this.connectToPeripheral(discPeripheral);
-	}
-
-	private attachPeripheral(peripheral: Noble.Peripheral) {
-		this.peripheral = peripheral;
-		this.peripheral.once("connect", this.onPeripheralConnect.bind(this));
-		this.peripheral.once("disconnect", this.onPeripheralDisconnect.bind(this));
 	}
 
 	/**
@@ -174,7 +169,9 @@ export default class Bluetooth {
 	}
 
 	private connectToPeripheral(discPeripheral: Noble.Peripheral) {
-		this.attachPeripheral(discPeripheral);
+		this.peripheral = discPeripheral;
+		this.peripheral.once("connect", this.onPeripheralConnect.bind(this));
+		this.peripheral.once("disconnect", this.onPeripheralDisconnect.bind(this));
 
 		Noble.stopScanning();
 		this.scanning = false;
