@@ -31,16 +31,16 @@ export default class Bluetooth {
 	/**
 	 * Callbacks
 	 */
-	private deviceFoundCallback: DeviceFoundCallback;
-	private connectHangupCallback: () => void;
-	private audioAlertCallback: () => void;
-	private peripheralButtonCallback: () => void;
+	private deviceFoundCallback: (peripheral : Noble.Peripheral) => void
+	private connectHangupCallback: () => void
+	private audioAlertCallback: () => void
+	private peripheralButtonCallback: () => void
 
 	constructor() {
-		Noble.on("stateChange", this.onBleStateChange.bind(this));
-		Noble.on("discover", this.deviceFound.bind(this));
-		Noble.on("scanStart", this.setScanStarted.bind(this));
-		Noble.on("scanStop", this.setScanStopped.bind(this));
+		Noble.on("stateChange", this.onBleStateChange.bind(this))
+		Noble.on("discover", this.deviceFound.bind(this))
+		Noble.on("scanStart", this.setScanStarted.bind(this))
+		Noble.on("scanStop", this.setScanStopped.bind(this))
 	}
 
 	public scan(scanFilter: ScanFilter, cb: DeviceFoundCallback): void {
