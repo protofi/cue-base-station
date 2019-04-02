@@ -3,9 +3,10 @@ import * as mqtt from 'mqtt'
 import * as jwt from 'jsonwebtoken'
 
 export enum Topics {
-    INITIALIZE = 'initialize',
-    UPDATE_WEBSOCKET = 'update-websocket',
-    NEW_SENSOR = "new-sensor"
+    INITIALIZE          = "initialize",
+    NEW_SENSOR          = "new-sensor",
+    NOTIFICATION        = "notification",
+    UPDATE_WEBSOCKET    = "update-websocket",
 }
 
 export enum Errors {

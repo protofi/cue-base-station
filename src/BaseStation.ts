@@ -47,6 +47,16 @@ export default class BaseStation {
                 })
             })
         })
+
+        this.listenForAlerts()
+    }
+
+    private listenForAlerts(): void 
+    {
+        //@ts-ignore
+        this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
+
+        })
     }
 
     private mountHooks(): void
@@ -61,7 +71,6 @@ export default class BaseStation {
                     sensor_UUID : sensorId
                 })
             })
-            
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
@@ -78,15 +87,19 @@ export default class BaseStation {
       
         this.bluetooth.onConnectHangup(() => {
             console.log("Connecting to peripheral failed, we should restart everything now")
-          });
+        });
       
-        this.bluetooth.onAudioAlert(() => {
-            console.log("Audio trigger. Should publish notification")
-          });
+        this.bluetooth.onAudioAlert((sensorId) => {
+            console.log("Audio trigger.")
+
+            this.pubSub.publish(Topics.NOTIFICATION, {
+                sensor_UUID : sensorId
+            })
+        })
       
         this.bluetooth.onPeripheralButton(() => {
             console.log("Button clicked")
-          });
+        });
     }
 
     private errorHandler(error: Error): void

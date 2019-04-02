@@ -32,7 +32,7 @@ export default class Bluetooth {
 	 */
 	private deviceFoundCallback: DeviceFoundCallback
 	private connectHangupCallback: () => void
-	private audioAlertCallback: () => void
+	private audioAlertCallback: (peripheralId: string) => void
 	private peripheralButtonCallback: () => void
 
 	constructor() {
@@ -74,7 +74,7 @@ export default class Bluetooth {
 		this.connectHangupCallback = cb
 	}
 
-	public onAudioAlert(cb: () => void): void {
+	public onAudioAlert(cb: (peripheralId: string) => void): void {
 		this.audioAlertCallback = cb
 	}
 
@@ -134,12 +134,13 @@ export default class Bluetooth {
 		const trigger = serviceDataJSONArray[0].uuid;
 
 		if(trigger === "4f49445541") {
-			this.audioAlertCallback();
+			this.audioAlertCallback(discPeripheral.id);
 		}
 	
 		if(trigger === "4e4f54545542") {
 			this.peripheralButtonCallback();
 		}
+
 		this.connectToPeripheral(discPeripheral);
 	}
 
@@ -175,7 +176,6 @@ export default class Bluetooth {
 		this.scanning = false;
 
 		this.peripheral.connect(error => console.log);
-		console.log("UUID: ", this.peripheral.uuid);
 		this.watchForConnectionTimeout();
 	}
 
