@@ -18,10 +18,11 @@ export default class Bluetooth {
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
+		console.log("Scanfilter applied on: ", peripheral)
 		if(this.peripheral === undefined) {
 			return false
 		}
-		return this.peripheral.advertisement.localName == this.allowedPeripheralName
+		return this.peripheral.advertisement.localName === this.allowedPeripheralName
 	}
 
 	private scanFilter: ScanFilter = this.defaultScanFilter;
@@ -116,6 +117,7 @@ export default class Bluetooth {
 		 * that we can access without having to discover services
 		 */
 		const advertisement: Advertisement = discPeripheral.advertisement;
+		console.log("Found cue-home peripheral with advertisement: ", advertisement);
 		const localName: string = advertisement.localName;
 		const txPowerLevel: number = discPeripheral.rssi;
 		const manufacturerData: Buffer = advertisement.manufacturerData;
@@ -165,7 +167,7 @@ export default class Bluetooth {
 
 	private onPeripheralConnect() {
 		if(!this.peripheral) {
-		return;
+			return;
 		}
 		console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
 		this.deviceFoundCallback(this.peripheral);
