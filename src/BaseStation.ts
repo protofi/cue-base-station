@@ -13,7 +13,6 @@ export default class BaseStation {
     private deviceUUIDPrefix: string    = process.env.DEVICE_UUID_PREFIX
 
     // for now, this is a hardcoded string, but we should probably have a map of allowed peripherals
-    private allowedPeripheralName: string = "home-cue"
 
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
@@ -48,25 +47,21 @@ export default class BaseStation {
                 })
             })
         })
-
-        this.bluetooth.scan();
     }
 
     private mountHooks(): void
     {
         this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
             
-            this.bluetooth.setScanFilter((peripheral: Noble.Peripheral) => {
-                return peripheral.advertisement.localName === this.allowedPeripheralName
-            });
+            this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
+                
+                const sensorId = peripheral.id
 
-            /* this.bluetooth.scan((device) => {
                 this.pubSub.publish(Topics.NEW_SENSOR, {
-                    sensor_UUID : uniqid()
+                    sensor_UUID : sensorId
                 })
-            }) */
+            })
             
-            // wait for bluetooth device to connect with sensor
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
@@ -80,10 +75,6 @@ export default class BaseStation {
         this.websocket.onError(this.errorHandler)
 
         this.pubSub.onError(this.errorHandler)
-
-        this.bluetooth.onDeviceFound((deviceID: string, servicesMap: Map<string, Noble.Service>) => {
-            console.log("Found device")
-        });
       
         this.bluetooth.onConnectHangup(() => {
             console.log("Connecting to peripheral failed, we should restart everything now")
