@@ -82,7 +82,7 @@ export default class BaseStation {
         this.pubSub.onError(this.errorHandler)
 
         this.bluetooth.onDeviceFound((deviceID: string, servicesMap: Map<string, Noble.Service>) => {
-            console.log("Found device.")
+            console.log("Found device")
         });
       
         this.bluetooth.onConnectHangup(() => {
