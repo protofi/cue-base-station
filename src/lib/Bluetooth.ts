@@ -18,7 +18,6 @@ export default class Bluetooth {
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
-		console.log("Peripheral found: ", peripheral.id)
 		if(peripheral === undefined) {
 			return false
 		}
@@ -176,6 +175,7 @@ export default class Bluetooth {
 		this.scanning = false;
 
 		this.peripheral.connect(error => console.log);
+		console.log("UUID: ", this.peripheral.uuid);
 		this.watchForConnectionTimeout();
 	}
 

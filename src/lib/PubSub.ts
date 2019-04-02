@@ -19,7 +19,7 @@ export default class PubSub {
 
     private mqttBridgeHostname: string  = 'mqtt.googleapis.com'
     private mqttBridgePort: string      = '8883'
-    private tokenExpMins: number        = 1
+    private tokenExpMins: number        = 20
     private numMessages: string         = '10'
     private messageType: string         = 'events'
     private algorithm: string           = 'RS256'
