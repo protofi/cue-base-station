@@ -63,4 +63,4 @@ fi
 mkdir ./data
 cp -r /data ./data
 
-node dist/main.js
+# node dist/main.js
