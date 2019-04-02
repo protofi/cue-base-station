@@ -19,7 +19,7 @@ export default class Bluetooth {
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
 		console.log("Peripheral found: ", peripheral.id)
-		if(this.peripheral === undefined) {
+		if(peripheral === undefined) {
 			return false
 		}
 		return peripheral.advertisement.localName === this.allowedPeripheralName
