@@ -60,7 +60,7 @@ elif [ -f /data/service.json ]; then
 fi
 
 # Copy files from persistent file storage
-mkdir ./data
-cp -r /data ./data
+mkdir -p ./data
+cp -r /data/* ./data
 
 # node dist/main.js
