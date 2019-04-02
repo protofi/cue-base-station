@@ -18,7 +18,10 @@ export default class Bluetooth {
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
-		return this.peripheral.advertisement.localName == this.allowedPeripheralName;
+		if(this.peripheral === undefined) {
+			return false
+		}
+		return this.peripheral.advertisement.localName == this.allowedPeripheralName
 	}
 
 	private scanFilter: ScanFilter = this.defaultScanFilter;
