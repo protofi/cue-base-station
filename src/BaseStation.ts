@@ -73,6 +73,10 @@ export default class BaseStation {
             console.log(CueWebsocketActions.ACTIVATE_CALIBATION_MODE)
         })
 
+        this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
+            this.bluetooth.disconnectPeripheral();
+        })
+
         this.websocket.onError(this.errorHandler)
 
         this.pubSub.onError(this.errorHandler)
