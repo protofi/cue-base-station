@@ -22,8 +22,7 @@ export default class Bluetooth {
 		if(this.peripheral === undefined) {
 			return false
 		}
-		console.log("Peripheral with id found: ", peripheral.id);
-		return this.peripheral.advertisement.localName === this.allowedPeripheralName
+		return peripheral.advertisement.localName === this.allowedPeripheralName
 	}
 
 	private scanFilter: ScanFilter = this.defaultScanFilter;
