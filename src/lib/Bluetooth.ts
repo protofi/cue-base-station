@@ -60,7 +60,7 @@ export default class Bluetooth {
 		}
 	}
 
-	public setScanFilter(scanFilter: (peripheral: Noble.Peripheral) => boolean) {
+	public setScanFilter(scanFilter: ScanFilter) {
 		this.scanFilter = scanFilter;
 	}
 
