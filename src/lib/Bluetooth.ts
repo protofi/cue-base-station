@@ -18,10 +18,11 @@ export default class Bluetooth {
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>();
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
-		console.log("Scanfilter applied on: ", peripheral)
 		if(this.peripheral === undefined) {
+			console.log("Undefined peripheral found")
 			return false
 		}
+		console.log("Peripheral with id found: ", peripheral.id);
 		return this.peripheral.advertisement.localName === this.allowedPeripheralName
 	}
 
