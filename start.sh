@@ -62,4 +62,7 @@ fi
 # Create link to persistent file storage
 ln -s /data ./data
 
+
+# hello
+
 node dist/main.js
