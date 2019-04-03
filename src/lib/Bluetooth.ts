@@ -25,13 +25,17 @@ export default class Bluetooth {
 		return peripheral.advertisement.localName === this.allowedPeripheralName
 	}
 
-	private scanFilter: ScanFilter = this.defaultScanFilter;
+	private currentScanFilter: ScanFilter = this.defaultScanFilter;
+	private prevScanFilter: ScanFilter = null;
+
 	private scanning: boolean = false;
 
 	/**
 	 * Callbacks
 	 */
-	private deviceFoundCallback: DeviceFoundCallback
+	private currentDeviceFoundCB: DeviceFoundCallback
+	private prevDeviceFoundCB: DeviceFoundCallback
+	
 	private connectHangupCallback: () => void
 	private audioAlertCallback: (peripheralId: string) => void
 	private peripheralButtonCallback: () => void
@@ -43,12 +47,17 @@ export default class Bluetooth {
 		Noble.on("scanStop", this.setScanStopped.bind(this))
 	}
 
-	public scan(scanFilter: ScanFilter, cb: DeviceFoundCallback): void {
+	public scan(scanFilter: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
 		
-		this.scanFilter = scanFilter
-		this.deviceFoundCallback = cb
+		this.prevScanFilter 		= (once) ? this.currentScanFilter : null
+		this.currentScanFilter 		= scanFilter
+
+		if(cb)
+		{
+			this.prevDeviceFoundCB = (once) ? this.currentDeviceFoundCB : null
+			this.currentDeviceFoundCB = cb
+		}
 	
-		// only start scanning if the bluetooth module is up and running
 		if (Noble.state === "poweredOn" && this.scanning === false) {
 			console.log("Radio powered on, starting scan")
 			Noble.startScanning([], true) // any service UUID, duplicates allowed
@@ -61,14 +70,14 @@ export default class Bluetooth {
 	}
 
 	public setScanFilter(scanFilter: ScanFilter) {
-		this.scanFilter = scanFilter
+		this.currentScanFilter = scanFilter
 	}
 
 	/**
 	 * onDeviceFound
 	 */
 	public onDeviceFound(cb: DeviceFoundCallback): void {
-		this.deviceFoundCallback = cb
+		this.currentDeviceFoundCB = cb
 	}
 
 	public onConnectHangup(cb: () => void): void {
@@ -116,8 +125,11 @@ export default class Bluetooth {
 
 	private deviceFound(discPeripheral: Noble.Peripheral) 
 	{
-		if (!this.scanFilter(discPeripheral)) return
+		if (!this.currentScanFilter(discPeripheral)) return
 		if (discPeripheral.state !== "disconnected") return
+
+		Noble.stopScanning();
+		this.scanning = false;
 
 		/**
 		 * Here, we fetch services and data from advertisement,
@@ -164,7 +176,7 @@ export default class Bluetooth {
 		}
 		delete this.peripheral;
 		
-		this.scan(this.scanFilter, this.deviceFoundCallback)
+		this.scan(this.currentScanFilter, this.currentDeviceFoundCB)
 	}
 
 	private onPeripheralConnect() {
@@ -172,7 +184,7 @@ export default class Bluetooth {
 			return;
 		}
 		console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
-		this.deviceFoundCallback(this.peripheral);
+		if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.peripheral);
 	}
 
 	private connectToPeripheral(discPeripheral: Noble.Peripheral) {
@@ -180,8 +192,9 @@ export default class Bluetooth {
 		this.peripheral.once("connect", this.onPeripheralConnect.bind(this));
 		this.peripheral.once("disconnect", this.onPeripheralDisconnect.bind(this));
 
-		Noble.stopScanning();
-		this.scanning = false;
+		// handle once request
+		this.currentScanFilter = (this.prevScanFilter) ? this.prevScanFilter : this.currentScanFilter
+		this.prevScanFilter = null
 
 		this.peripheral.connect(error => console.log);
 		this.watchForConnectionTimeout();

@@ -49,15 +49,11 @@ export default class BaseStation {
         this.bluetooth.poweredOn(() => {
             this.listenForAlerts()
         })
-        
     }
 
     private listenForAlerts(): void 
     {
-        console.log("Registering default mode callback")
-        this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
-            console.log("We be scanning")
-        })
+        this.bluetooth.scan(this.bluetooth.defaultScanFilter)
     }
 
     private mountHooks(): void
@@ -70,9 +66,7 @@ export default class BaseStation {
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     sensor_UUID : sensorId
                 })
-
-                this.listenForAlerts();
-            })
+            }, true)
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
