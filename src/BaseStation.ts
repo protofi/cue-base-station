@@ -12,8 +12,6 @@ export default class BaseStation {
     private deviceUUID: string          = process.env.RESIN_DEVICE_UUID
     private deviceUUIDPrefix: string    = process.env.DEVICE_UUID_PREFIX
 
-    // for now, this is a hardcoded string, but we should probably have a map of allowed peripherals
-
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
         this.pubSub = pubsub
@@ -54,7 +52,7 @@ export default class BaseStation {
     private listenForAlerts(): void 
     {
         this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
-
+            console.log("We be scanning")
         })
     }
 
@@ -69,7 +67,7 @@ export default class BaseStation {
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     sensor_UUID : sensorId
                 })
-                
+
                 this.listenForAlerts();
             })
         })
