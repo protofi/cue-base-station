@@ -10,6 +10,7 @@ export interface DeviceFoundCallback {
 }
 
 export default class Bluetooth {
+	private stateChangeActions: Map<string, () => void> = new Map()
 
 	private allowedPeripheralName: string = "home-cue"
 
@@ -81,6 +82,10 @@ export default class Bluetooth {
 	public onPeripheralButton(cb: () => void): void {
 		this.peripheralButtonCallback = cb
 	}
+	
+	public poweredOn(cb: () => void): any {
+        this.stateChangeActions.set("poweredOn", cb)
+    }
 
 	/**
 	 * disconnectCurrentPeripheral
@@ -102,8 +107,11 @@ export default class Bluetooth {
 	}
 
 	private onBleStateChange(state: string) {
-		
+	
 		console.log('STATE CHANGE: ', state)
+		const action = this.stateChangeActions.get(state)
+		if(action) action();
+
 	}
 
 	private deviceFound(discPeripheral: Noble.Peripheral) 

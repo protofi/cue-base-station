@@ -46,7 +46,10 @@ export default class BaseStation {
             })
         })
 
-        this.listenForAlerts()
+        this.bluetooth.poweredOn(() => {
+            this.listenForAlerts()
+        })
+        
     }
 
     private listenForAlerts(): void 
