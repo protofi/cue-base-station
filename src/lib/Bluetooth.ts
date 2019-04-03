@@ -58,15 +58,18 @@ export default class Bluetooth {
 			this.currentDeviceFoundCB = cb
 		}
 	
-		if (Noble.state === "poweredOn" && this.scanning === false) {
-			console.log("Radio powered on, starting scan")
-			Noble.startScanning([], true) // any service UUID, duplicates allowed
-			this.scanning = true
-
-		} else {
-			console.log("Radio not powered on, stopping scan")
+		if(Noble.state !== "poweredOn") {
+			console.error("Scan: Radio not powered on")
 			this.scanning = false
+			return
 		}
+		if(this.scanning) {
+			console.error("Scan: Already scanning")
+			return
+		}
+		console.log("Radio powered on, starting scan")
+		Noble.startScanning([], true) // any service UUID, duplicates allowed
+		this.scanning = true
 	}
 
 	public setScanFilter(scanFilter: ScanFilter) {

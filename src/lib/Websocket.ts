@@ -70,7 +70,8 @@ export default class Websocket {
         })
 
         this.socket.on('close', (connection: WebSocket.connection, reason: number, desc: string) => {
-            console.log('WEBSOCKET CLOSED CONNECTED', connection, reason, desc)
+            console.log('WEBSOCKET CLOSED CONNECTION, description', desc)
+            console.log('WEBSOCKET CLOSED CONNECTION, reason: ', reason)
         })
 
         this.socket.on('request', (request: WebSocket.request) => {
@@ -126,7 +127,7 @@ export default class Websocket {
 
 export enum CueWebsocketActions {
     ACTIVATE_PAIRING_MODE = 'pairing',
-    ACTIVATE_CALIBATION_MODE = 'calibarition',
+    ACTIVATE_CALIBATION_MODE = 'calibration',
     DISCONNECT_ATTACHED_PERIPHERAL = "disconnect"
 }
 
