@@ -50,7 +50,7 @@ export default class Bluetooth {
 		// only start scanning if the bluetooth module is up and running
 		if (Noble.state === "poweredOn" && this.scanning === false) {
 			console.log("Radio powered on, starting scan")
-			Noble.startScanning([], false) // any service UUID, duplicates allowed
+			Noble.startScanning([], true) // any service UUID, duplicates allowed
 			this.scanning = true
 
 		} else {
