@@ -53,7 +53,6 @@ export default class BaseStation {
 
     private listenForAlerts(): void 
     {
-        //@ts-ignore
         this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
 
         })
@@ -70,6 +69,8 @@ export default class BaseStation {
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     sensor_UUID : sensorId
                 })
+                
+                this.listenForAlerts();
             })
         })
         
