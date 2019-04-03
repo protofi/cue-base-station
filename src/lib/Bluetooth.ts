@@ -188,6 +188,12 @@ export default class Bluetooth {
 		}
 		console.log(`* Connected to: ${this.peripheral.advertisement.localName}`);
 		if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.peripheral);
+
+		this.peripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
+			console.log("Error: ", error)
+			console.log("Services: ", services)
+			console.log("Characteristics: ", chararacteristics)
+		})
 	}
 
 	private connectToPeripheral(discPeripheral: Noble.Peripheral) {
