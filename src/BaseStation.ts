@@ -51,6 +51,7 @@ export default class BaseStation {
 
     private listenForAlerts(): void 
     {
+        console.log("Registering default mode callback")
         this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
             console.log("We be scanning")
         })
@@ -59,9 +60,8 @@ export default class BaseStation {
     private mountHooks(): void
     {
         this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
-            
+            console.log("Registering pairing mode callback")
             this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
-                
                 const sensorId = peripheral.id
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {
