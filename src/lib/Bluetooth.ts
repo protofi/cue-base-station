@@ -147,7 +147,7 @@ export default class Bluetooth {
 		if(trigger === "4e4f54545542") {
 			this.peripheralButtonCallback();
 		}
-		console.log("Found cue-home peripheral, trying to connect", advertisement)
+		console.log("Found cue-home peripheral, trying to connect")
 		this.connectPeripheral(discPeripheral);
 	}
 
