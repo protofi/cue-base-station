@@ -47,13 +47,8 @@ export default class BaseStation {
         })
 
         this.bluetooth.poweredOn(() => {
-            this.listenForAlerts()
+            this.bluetooth.scan(this.bluetooth.defaultScanFilter)
         })
-    }
-
-    private listenForAlerts(): void 
-    {
-        this.bluetooth.scan(this.bluetooth.defaultScanFilter)
     }
 
     private mountHooks(): void

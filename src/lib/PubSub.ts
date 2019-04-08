@@ -10,7 +10,7 @@ export enum Topics {
 }
 
 export enum Errors {
-    NOT_AUTHERIZED = 'Not authorized',
+    NOT_AUTHORIZED = 'Not authorized',
     BAD_USER_PASS = 'Bad username or password'
 
 }
