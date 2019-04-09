@@ -44,6 +44,13 @@ export default class BaseStation {
                     base_station_address    : address.address
                 })
             })
+            
+            this.pubSub.publish(Topics.HEARTBEAT, {
+                id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
+                signal_strength         : Math.random()*10,
+                battery_level           : Math.random()*100,
+            })
+
         })
 
         this.bluetooth.poweredOn(() => {
@@ -66,6 +73,10 @@ export default class BaseStation {
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
             console.log(CueWebsocketActions.ACTIVATE_CALIBATION_MODE)
+            this.pubSub.publish(Topics.CALIBRATION, {
+                id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
+                db_threshold            : Math.random()*10,
+            })
         })
 
         this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {

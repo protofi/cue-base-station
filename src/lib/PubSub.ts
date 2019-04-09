@@ -7,6 +7,8 @@ export enum Topics {
     NEW_SENSOR          = "new-sensor",
     NOTIFICATION        = "notification",
     UPDATE_WEBSOCKET    = "update-websocket",
+    HEARTBEAT           = "heartbeat",
+    CALIBRATION         = "calibration",
 }
 
 export enum Errors {
