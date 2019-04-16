@@ -128,8 +128,7 @@ export default class Bluetooth {
 		 * Advertisement holds data that we can access 
 		 * without having to discover services
 		 */
-		const advertisement: Advertisement = discPeripheral.advertisement
-
+		this.logAdvertisementData(discPeripheral);
 		/**
 		 * Investigate service data, to see if audio or button trigger is present. 
 		 */
@@ -148,8 +147,29 @@ export default class Bluetooth {
 		if(trigger === "4e4f54545542") {
 			this.peripheralButtonCallback()
 		}
-		console.log("Found cue-home peripheral, trying to connect")
 		this.connectPeripheral(discPeripheral)
+	}
+
+	private logAdvertisementData(discPeripheral: Noble.Peripheral) {
+		const txPowerLevel: number = discPeripheral.rssi
+		const advertisement: Advertisement = discPeripheral.advertisement
+		const localName: string = advertisement.localName
+    const manufacturerData: Buffer = advertisement.manufacturerData
+    const serviceUuids: string[] = advertisement.serviceUuids
+		
+		if (localName) {
+			console.log("localName: " + localName)	
+		}
+		if(txPowerLevel) {
+			console.log("tx level: ", txPowerLevel)
+		}
+		if(manufacturerData) {
+			console.log("manufacturerdata: ", manufacturerData)
+		}
+		if(serviceUuids) {
+			console.log("ServiceUUIDs: ", serviceUuids)
+		}
+		
 	}
 
 	private connectPeripheral(discPeripheral: Noble.Peripheral) {
