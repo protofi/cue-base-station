@@ -137,7 +137,9 @@ export default class Bluetooth {
 		if(serviceDataJSONArray.length < 1) {
 			return
 		}
-	
+		
+		console.log("Service data: ", serviceDataJSONArray);
+
 		const trigger = serviceDataJSONArray[0].uuid
 
 		if(trigger === "4f49445541") {
@@ -152,22 +154,13 @@ export default class Bluetooth {
 
 	private logAdvertisementData(discPeripheral: Noble.Peripheral) {
 		const txPowerLevel: number = discPeripheral.rssi
-		const advertisement: Advertisement = discPeripheral.advertisement
-		const localName: string = advertisement.localName
-    const manufacturerData: Buffer = advertisement.manufacturerData
-    const serviceUuids: string[] = advertisement.serviceUuids
+		const localName: string = discPeripheral.advertisement.localName
 		
 		if (localName) {
-			console.log("localName: " + localName)	
+			console.log("local name: " + localName)	
 		}
 		if(txPowerLevel) {
 			console.log("tx level: ", txPowerLevel)
-		}
-		if(manufacturerData) {
-			console.log("manufacturerdata: ", manufacturerData)
-		}
-		if(serviceUuids) {
-			console.log("ServiceUUIDs: ", serviceUuids)
 		}
 		
 	}
