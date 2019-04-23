@@ -7,7 +7,7 @@ export default class Websocket {
     private server: http.Server
     private socket: WebSocket.server
     
-    private port: number = 3050
+    private port: number = 80
 
     private maxConnectionAttempts = 10
     private connectionAttempCount = 0
@@ -25,7 +25,10 @@ export default class Websocket {
 
         if(this.server) this.server.close()
 
-        this.server = http.createServer()
+        this.server = http.createServer((req, res) => {
+            res.write('Hello')
+            res.end()
+        })
 
         this.socket = new WebSocket.server({
             httpServer: this.server,
@@ -71,7 +74,7 @@ export default class Websocket {
 
         this.socket.on('close', (connection: WebSocket.connection, reason: number, desc: string) => {
             console.log('WEBSOCKET CLOSED CONNECTION')
-            console.log('description', desc)
+            console.log('description:', desc)
             console.log('reason: ', reason)
         })
 
