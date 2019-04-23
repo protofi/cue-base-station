@@ -70,8 +70,9 @@ export default class Websocket {
         })
 
         this.socket.on('close', (connection: WebSocket.connection, reason: number, desc: string) => {
-            console.log('WEBSOCKET CLOSED CONNECTION, description', desc)
-            console.log('WEBSOCKET CLOSED CONNECTION, reason: ', reason)
+            console.log('WEBSOCKET CLOSED CONNECTION')
+            console.log('description', desc)
+            console.log('reason: ', reason)
         })
 
         this.socket.on('request', (request: WebSocket.request) => {
