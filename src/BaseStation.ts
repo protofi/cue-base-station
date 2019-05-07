@@ -64,12 +64,12 @@ export default class BaseStation {
             console.log("Base Station is now in pairing mode")
 
             this.bluetooth.stopScaning()
-            
+
             this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
                 const sensorId = peripheral.id
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {
-                    sensor_UUID : sensorId
+                    id : sensorId
                 })
             }, true)
         })
