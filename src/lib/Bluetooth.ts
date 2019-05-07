@@ -47,9 +47,13 @@ export default class Bluetooth {
 		const { localName } = peripheral.advertisement
 
 		if(localName != this.peripheralName) return false
+		
+		console.log('SENSOR FOUND:', this.peripheralName, peripheral.id)
+
 		if(this.knownPeripherals.has(peripheral.id)) return false
 
-		console.log('SENSOR FOUND')
+		console.log('PAIRING')
+
 		this.knownPeripherals.add(peripheral.id)
 
 		if(this.currentDeviceFoundCB)
@@ -119,6 +123,7 @@ export default class Bluetooth {
 
 		if(cb) //if callback if parsed
 		{
+			console.log('SETTING SCAN CALLBACK')
 			this.prevDeviceFoundCB = (once) ? this.currentDeviceFoundCB : null
 			this.currentDeviceFoundCB = cb
 		}
