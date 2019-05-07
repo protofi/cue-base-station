@@ -15,7 +15,9 @@ export default class Bluetooth {
 
 	private stateChangeActions: Map<string, () => void> = new Map()
 
-	private scannerTimestamp = 0
+	private scannerStartTime = 0
+	private scannerTimeout = 10000 //10 sec
+
 	private peripheralName: string = "home-cue"
 	private knownPeripherals: Set<string> = new Set()
 	protected currentPeripheral: Noble.Peripheral
@@ -125,14 +127,14 @@ export default class Bluetooth {
 			this.currentDeviceFoundCB = cb
 		}
 	
-		this.scannerTimestamp = Date.now()
+		this.scannerStartTime = Date.now()
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 		this.scanning = true
 	}
 
 	private deviceFound(peripheral: Noble.Peripheral) 
 	{
-		if(!this.scannerStrategy(peripheral)) return
+		if(!this.scannerStrategy(peripheral) && this.scannerStartTime + this.scannerTimeout > Date.now()) return
 
 		// if (!this.currentScanFilter(peripheral)) return
 		// if (peripheral.state !== "disconnected") return
@@ -192,8 +194,6 @@ export default class Bluetooth {
 		if(action) action()
 
 	}
-
-	
 
 	private logAdvertisementData(discPeripheral: Noble.Peripheral) {
 		const txPowerLevel: number = discPeripheral.rssi
