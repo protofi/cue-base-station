@@ -133,8 +133,7 @@ export default class Bluetooth {
 		// if (!this.currentScanFilter(peripheral)) return
 		// if (peripheral.state !== "disconnected") return
 
-		Noble.stopScanning()
-		this.scanning = false
+		this.stopScaning()
 
 		// /**
 		//  * Advertisement holds data that we can access 
@@ -164,9 +163,10 @@ export default class Bluetooth {
 		// this.connectPeripheral(peripheral)
 	}
 
-
-
-
+	public stopScaning() {
+		Noble.stopScanning()
+		this.scanning = false
+	}
 
 	public setScanFilter(scanFilter: ScanFilter) {
 		this.currentScanFilter = scanFilter
