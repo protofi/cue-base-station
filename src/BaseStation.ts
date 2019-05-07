@@ -45,11 +45,11 @@ export default class BaseStation {
                 })
             })
             
-            this.pubSub.publish(Topics.HEARTBEAT, {
-                id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
-                signal_strength         : Math.random()*10,
-                battery_level           : Math.random()*100,
-            })
+            // this.pubSub.publish(Topics.HEARTBEAT, {
+            //     id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
+            //     signal_strength         : Math.random()*10,
+            //     battery_level           : Math.random()*100,
+            // })
         })
 
         this.bluetooth.poweredOn(() => {
@@ -78,13 +78,13 @@ export default class BaseStation {
             console.log("Base Station is now in calibration mode")
 
             this.pubSub.publish(Topics.CALIBRATION, {
-                id                      : sensorIdMock,
-                db_threshold            : Math.random()*10,
+                id              : sensorIdMock,
+                db_threshold    : Math.random()*10,
             })
         })
 
         this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
-            this.bluetooth.disconnectPeripheral();
+            this.bluetooth.disconnectPeripheral()
         })
 
         this.websocket.onError(this.errorHandler)

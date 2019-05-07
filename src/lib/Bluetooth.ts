@@ -15,6 +15,7 @@ export default class Bluetooth {
 
 	private stateChangeActions: Map<string, () => void> = new Map()
 
+	private scannerTimestamp = 0
 	private peripheralName: string = "home-cue"
 	private knownPeripherals: Set<string> = new Set()
 	protected currentPeripheral: Noble.Peripheral
@@ -48,11 +49,7 @@ export default class Bluetooth {
 
 		if(localName != this.peripheralName) return false
 		
-		console.log('SENSOR FOUND:', this.peripheralName, peripheral.id)
-
 		if(this.knownPeripherals.has(peripheral.id)) return false
-
-		console.log('PAIRING')
 
 		this.knownPeripherals.add(peripheral.id)
 
@@ -128,6 +125,7 @@ export default class Bluetooth {
 			this.currentDeviceFoundCB = cb
 		}
 	
+		this.scannerTimestamp = Date.now()
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 		this.scanning = true
 	}
