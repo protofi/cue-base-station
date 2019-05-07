@@ -164,6 +164,7 @@ export default class Bluetooth {
 	}
 
 	public stopScaning() {
+		console.log('STOP SCANNING')
 		Noble.stopScanning()
 		this.scanning = false
 	}
