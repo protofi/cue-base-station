@@ -49,6 +49,7 @@ export default class Bluetooth {
 		if(localName != this.peripheralName) return false
 		if(this.knownPeripherals.has(peripheral.id)) return false
 
+		console.log('SENSOR FOUND')
 		this.knownPeripherals.add(peripheral.id)
 
 		this.currentDeviceFoundCB(peripheral)
@@ -127,8 +128,6 @@ export default class Bluetooth {
 
 	private deviceFound(peripheral: Noble.Peripheral) 
 	{
-		console.log('DEVICE FOUND')
-
 		if(!this.scannerStrategy(peripheral)) return
 
 		// if (!this.currentScanFilter(peripheral)) return
