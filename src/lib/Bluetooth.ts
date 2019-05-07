@@ -52,7 +52,8 @@ export default class Bluetooth {
 		console.log('SENSOR FOUND')
 		this.knownPeripherals.add(peripheral.id)
 
-		this.currentDeviceFoundCB(peripheral)
+		if(this.currentDeviceFoundCB)
+			this.currentDeviceFoundCB(peripheral)
 
 		return true
 	}
