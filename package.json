@@ -4,6 +4,7 @@
   "description": "This is a simple skeleton Express server project that works on any of the [balena][balena-link] supported devices.",
   "main": "dist/main.js",
   "scripts": {
+    "local": "dos2unix start.sh start.sh && balena push",
     "start": "tsc -p src && bash start.sh",
     "build": "tsc -p src",
     "clear": "bash clear.sh && rmdir data /S /Q",
@@ -12,7 +13,6 @@
     "deploy:from": "git push balena",
     "test": "mocha -r ts-node/register test/**/*.test.ts --exit --timeout 5000 || true",
     "test:coverage": "nyc _mocha -r ts-node/register test/**/*.test.ts"
-    
   },
   "nyc": {
     "extension": [
@@ -50,6 +50,7 @@
     "@types/socket.io": "^2.1.2",
     "@types/uniqid": "^4.1.3",
     "@types/websocket": "0.0.40",
+    "bluetooth-hci-socket": "^0.5.1",
     "gulp-cli": "^2.0.1",
     "jsonwebtoken": "^8.5.0",
     "mqtt": "^2.18.8",
@@ -63,7 +64,7 @@
     "@types/mocha": "^5.2.6",
     "@types/sinon": "^7.0.9",
     "chai": "^4.2.0",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.4",
     "nyc": "^13.3.0",
     "sinon": "^7.2.7",
     "ts-node": "^8.0.3"

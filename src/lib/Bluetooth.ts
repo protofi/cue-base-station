@@ -16,7 +16,7 @@ export default class Bluetooth {
 	private stateChangeActions: Map<string, () => void> = new Map()
 
 	private peripheralName: string = "home-cue"
-	private list: Array<string>
+	private knownPeripherals: Array<string>
 	protected peripheral: Noble.Peripheral
 	private servicesMap = new Map<string, Noble.Service>()
 	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>()
@@ -71,49 +71,38 @@ export default class Bluetooth {
     }
 
 
+
+
+
+
+
 	public scan(scanFilter: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
 		
 		this.prevScanFilter 		= (once) ? this.currentScanFilter : null
 		this.currentScanFilter 		= scanFilter
 
-		if(cb)
+		if(cb) //if callback if parsed
 		{
 			this.prevDeviceFoundCB = (once) ? this.currentDeviceFoundCB : null
 			this.currentDeviceFoundCB = cb
 		}
 	
-		if(Noble.state !== "poweredOn") {
+		if(Noble.state !== "poweredOn")
+		{
 			console.error("Scan: Radio not powered on")
 			this.scanning = false
 			return
 		}
-		if(this.scanning) {
+
+		if(this.scanning)
+		{
 			console.error("Scan: Already scanning")
 			return
 		}
+		
 		console.log("Radio powered on, starting scan")
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 		this.scanning = true
-	}
-
-	public setScanFilter(scanFilter: ScanFilter) {
-		this.currentScanFilter = scanFilter
-	}
-
-	private setScanStarted() {
-		this.scanning = true
-	}
-
-	private setScanStopped() {
-		this.scanning = false
-	}
-
-	private onBleStateChange(state: string) {
-	
-		console.log('STATE CHANGE: ', state)
-		const action = this.stateChangeActions.get(state)
-		if(action) action()
-
 	}
 
 	private deviceFound(discPeripheral: Noble.Peripheral) 
@@ -151,6 +140,32 @@ export default class Bluetooth {
 		}
 		this.connectPeripheral(discPeripheral)
 	}
+
+
+
+
+
+	public setScanFilter(scanFilter: ScanFilter) {
+		this.currentScanFilter = scanFilter
+	}
+
+	private setScanStarted() {
+		this.scanning = true
+	}
+
+	private setScanStopped() {
+		this.scanning = false
+	}
+
+	private onBleStateChange(state: string) {
+	
+		console.log('STATE CHANGE: ', state)
+		const action = this.stateChangeActions.get(state)
+		if(action) action()
+
+	}
+
+	
 
 	private logAdvertisementData(discPeripheral: Noble.Peripheral) {
 		const txPowerLevel: number = discPeripheral.rssi
@@ -198,8 +213,8 @@ export default class Bluetooth {
 
 	public disconnectPeripheral() {
 		if(!this.peripheral) {
-		console.log("Disconnect: No peripheral to disconnect.")
-		return
+			console.log("Disconnect: No peripheral to disconnect.")
+			return
 		}
 		this.peripheral.disconnect()
 	}
@@ -219,7 +234,9 @@ export default class Bluetooth {
 	private watchForConnectionTimeout() {
 		let currentTimeoutDuration = 0
 		const ConnectionTimeoutInterval = setInterval(() => {
-		if(this.peripheral.state === "connecting" || this.peripheral.state === "disconnecting") {
+		
+		if(this.peripheral && (this.peripheral.state === "connecting" || this.peripheral.state === "disconnecting"))
+		{
 			currentTimeoutDuration++
 			console.log(this.peripheral.state)
 		}

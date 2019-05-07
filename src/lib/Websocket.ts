@@ -15,7 +15,7 @@ export default class Websocket {
     private connectedCallback: () => void = () => { console.log('CONNECTED', this.port) }
     private errorCallback: (error: Error) => void = console.log
 
-    private actions: Map<CueWebsocketActions, () => void> = new Map()
+    private actions: Map<CueWebsocketActions, (payload?:{}) => void> = new Map()
 
     constructor () {}
 
@@ -90,7 +90,7 @@ export default class Websocket {
 
                 const action = this.actions.get(cueMessage.action)
 
-                if(action) action()
+                if(action) action(cueMessage.payload)
             })
         })
     }

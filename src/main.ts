@@ -8,5 +8,3 @@ console.log('Oh hi Main')
 const baseStation = new BaseStation(new PubSub(), new Websocket, new Bluetooth())
 
 baseStation.initialize()
-
-//

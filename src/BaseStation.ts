@@ -4,6 +4,8 @@ import * as uniqid from 'uniqid'
 import Bluetooth from "./lib/Bluetooth";
 import * as Noble from 'noble';
 
+const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
+
 export default class BaseStation {
     private pubSub: PubSub
     private websocket: Websocket
@@ -50,7 +52,6 @@ export default class BaseStation {
                 signal_strength         : Math.random()*10,
                 battery_level           : Math.random()*100,
             })
-
         })
 
         this.bluetooth.poweredOn(() => {
@@ -61,7 +62,9 @@ export default class BaseStation {
     private mountHooks(): void
     {
         this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
-            console.log("Registering pairing mode callback")
+            
+            console.log("Base Station is now in pairing mode")
+
             this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
                 const sensorId = peripheral.id
 
@@ -72,9 +75,10 @@ export default class BaseStation {
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
-            console.log(CueWebsocketActions.ACTIVATE_CALIBATION_MODE)
+            console.log("Base Station is now in calibration mode")
+
             this.pubSub.publish(Topics.CALIBRATION, {
-                id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
+                id                      : sensorIdMock,
                 db_threshold            : Math.random()*10,
             })
         })
@@ -95,7 +99,7 @@ export default class BaseStation {
             console.log("Audio trigger.")
 
             this.pubSub.publish(Topics.NOTIFICATION, {
-                sensor_UUID : sensorId
+                id : sensorId
             })
         })
       
@@ -119,6 +123,7 @@ process
     console.log('**********************************************')
     console.error('Uncaught Exception thrown')
     console.error(error.message)
+    console.error(error)
     console.log('**********************************************')
     console.log('')
 })
