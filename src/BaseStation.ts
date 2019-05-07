@@ -1,8 +1,6 @@
 import PubSub, { Topics } from "./lib/PubSub";
 import Websocket, { CueWebsocketActions } from "./lib/Websocket";
-import * as uniqid from 'uniqid'
 import Bluetooth from "./lib/Bluetooth";
-import * as Noble from 'noble';
 
 const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
 
@@ -65,7 +63,7 @@ export default class BaseStation {
             
             console.log("Base Station is now in pairing mode")
 
-            this.bluetooth.scan(this.bluetooth.defaultScanFilter, (peripheral) => {
+            this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
                 const sensorId = peripheral.id
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {

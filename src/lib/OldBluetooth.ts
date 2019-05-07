@@ -9,7 +9,7 @@ export interface DeviceFoundCallback {
 	(peripheral: Noble.Peripheral) : void
 }
 
-export default class Bluetooth {
+export default class OldBluetooth {
 	
 	private scanning: boolean = false
 
@@ -17,7 +17,9 @@ export default class Bluetooth {
 
 	private peripheralName: string = "home-cue"
 	private knownPeripherals: Set<string> = new Set()
-	protected currentPeripheral: Noble.Peripheral
+	protected peripheral: Noble.Peripheral
+	private servicesMap = new Map<string, Noble.Service>()
+	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>()
 
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return false
@@ -38,20 +40,6 @@ export default class Bluetooth {
 	private currentScanFilter: ScanFilter = this.defaultScanFilter
 	private prevScanFilter: ScanFilter = null
 
-	private scannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return false
-
-		const { localName } = peripheral.advertisement
-
-		if(localName != this.peripheralName) return false
-		if(this.knownPeripherals.has(peripheral.id)) return false
-
-		this.knownPeripherals.add(peripheral.id)
-
-		this.currentDeviceFoundCB(peripheral)
-
-		return true
-	}
 	/**
 	 * Callbacks
 	 */
@@ -92,22 +80,13 @@ export default class Bluetooth {
         this.stateChangeActions.set("poweredOn", cb)
     }
 
+
+
+
+
+
+
 	public scan(scanFilter: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
-		
-		console.log('STARTING SCAN')
-
-		if(Noble.state !== "poweredOn")
-		{
-			console.error("DENIED: Radio is not powered on")
-			this.scanning = false
-			return
-		}
-
-		if(this.scanning)
-		{
-			console.error("DENIED: Already scanning")
-			return
-		}
 		
 		this.prevScanFilter 		= (once) ? this.currentScanFilter : null
 		this.currentScanFilter 		= scanFilter
@@ -118,48 +97,60 @@ export default class Bluetooth {
 			this.currentDeviceFoundCB = cb
 		}
 	
+		if(Noble.state !== "poweredOn")
+		{
+			console.error("Scan: Radio not powered on")
+			this.scanning = false
+			return
+		}
+
+		if(this.scanning)
+		{
+			console.error("Scan: Already scanning")
+			return
+		}
+		
+		console.log("Radio powered on, starting scan")
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 		this.scanning = true
 	}
 
 	private deviceFound(peripheral: Noble.Peripheral) 
 	{
-		console.log('DEVICE FOUND')
-
-		if(!this.scannerStrategy(peripheral)) return
-
-		// if (!this.currentScanFilter(peripheral)) return
-		// if (peripheral.state !== "disconnected") return
+		if (!this.currentScanFilter(peripheral)) return
+		if (peripheral.state !== "disconnected") return
 
 		Noble.stopScanning()
 		this.scanning = false
 
-		// /**
-		//  * Advertisement holds data that we can access 
-		//  * without having to discover services
-		//  */
-		// this.logAdvertisementData(peripheral);
-		// /**
-		//  * Investigate service data, to see if audio or button trigger is present. 
-		//  */
-		// const serviceDataJSONArray = JSON.parse(JSON.stringify(peripheral.advertisement.serviceData))
+		this.knownPeripherals.add(peripheral.id)
+
+		/**
+		 * Advertisement holds data that we can access 
+		 * without having to discover services
+		 */
+		this.logAdvertisementData(peripheral);
+		/**
+		 * Investigate service data, to see if audio or button trigger is present. 
+		 */
+		const serviceDataJSONArray = JSON.parse(JSON.stringify(peripheral.advertisement.serviceData))
 	
-		// if(serviceDataJSONArray.length < 1) {
-		// 	return
-		// }
+		if(serviceDataJSONArray.length < 1) {
+			return
+		}
 		
-		// console.log("Service data: ", serviceDataJSONArray);
+		console.log("Service data: ", serviceDataJSONArray);
 
-		// const trigger = serviceDataJSONArray[0].uuid
+		const trigger = serviceDataJSONArray[0].uuid
 
-		// if(trigger === "4f49445541") {
-		// 	this.audioAlertCallback(peripheral.id)
-		// }
+		if(trigger === "4f49445541") {
+			this.audioAlertCallback(peripheral.id)
+		}
 	
-		// if(trigger === "4e4f54545542") {
-		// 	this.peripheralButtonCallback()
-		// }
-		// this.connectPeripheral(peripheral)
+		if(trigger === "4e4f54545542") {
+			this.peripheralButtonCallback()
+		}
+		this.connectPeripheral(peripheral)
 	}
 
 
@@ -202,26 +193,26 @@ export default class Bluetooth {
 	}
 
 	private connectPeripheral(discPeripheral: Noble.Peripheral) {
-		this.currentPeripheral = discPeripheral
-		this.currentPeripheral.once("connect", this.onPeripheralConnect.bind(this))
-		this.currentPeripheral.once("disconnect", this.onPeripheralDisconnect.bind(this))
+		this.peripheral = discPeripheral
+		this.peripheral.once("connect", this.onPeripheralConnect.bind(this))
+		this.peripheral.once("disconnect", this.onPeripheralDisconnect.bind(this))
 
 		// handle once request
 		this.currentScanFilter = (this.prevScanFilter) ? this.prevScanFilter : this.currentScanFilter
 		this.prevScanFilter = null
 
-		this.currentPeripheral.connect(error => console.log)
+		this.peripheral.connect(error => console.log)
 		this.watchForConnectionTimeout()
 	}
 
 	private onPeripheralConnect(keepConnectionAlive: boolean) {
-		if(!this.currentPeripheral) {
+		if(!this.peripheral) {
 			return
 		}
-		console.log(`* Connected to: ${this.currentPeripheral.advertisement.localName}`)
-		if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
+		console.log(`* Connected to: ${this.peripheral.advertisement.localName}`)
+		if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.peripheral)
 
-		this.currentPeripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
+		this.peripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
 			if(error) {
 				console.log("There was an error discovering services: ", error)
 			}
@@ -233,21 +224,21 @@ export default class Bluetooth {
 	}
 
 	public disconnectPeripheral() {
-		if(!this.currentPeripheral) {
+		if(!this.peripheral) {
 			console.log("Disconnect: No peripheral to disconnect.")
 			return
 		}
-		this.currentPeripheral.disconnect()
+		this.peripheral.disconnect()
 	}
 
 	private onPeripheralDisconnect() {
 		this.characteristicMap = new Map<string, Map<string, Noble.Characteristic>>()
 		this.servicesMap = new Map<string, Noble.Service>()
 	
-		if(this.currentPeripheral) {
-			console.log(`Disconnecting from: ${this.currentPeripheral.advertisement.localName}`)
+		if(this.peripheral) {
+			console.log(`Disconnecting from: ${this.peripheral.advertisement.localName}`)
 		}
-		delete this.currentPeripheral
+		delete this.peripheral
 		
 		this.scan(this.currentScanFilter, this.currentDeviceFoundCB)
 	}
@@ -256,10 +247,10 @@ export default class Bluetooth {
 		let currentTimeoutDuration = 0
 		const ConnectionTimeoutInterval = setInterval(() => {
 		
-		if(this.currentPeripheral && (this.currentPeripheral.state === "connecting" || this.currentPeripheral.state === "disconnecting"))
+		if(this.peripheral && (this.peripheral.state === "connecting" || this.peripheral.state === "disconnecting"))
 		{
 			currentTimeoutDuration++
-			console.log(this.currentPeripheral.state)
+			console.log(this.peripheral.state)
 		}
 
 		if(currentTimeoutDuration > 10) {
