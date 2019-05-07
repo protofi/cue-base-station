@@ -19,6 +19,9 @@ export default class Bluetooth {
 	private knownPeripherals: Set<string> = new Set()
 	protected currentPeripheral: Noble.Peripheral
 
+	private servicesMap = new Map<string, Noble.Service>()
+	private characteristicMap = new Map<string, Map<string, Noble.Characteristic>>()
+
 	public readonly defaultScanFilter: ScanFilter = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return false
 
