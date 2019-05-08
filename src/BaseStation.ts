@@ -1,12 +1,9 @@
 import PubSub, { Topics } from "./lib/PubSub";
 import Websocket, { CueWebsocketActions } from "./lib/Websocket";
 import Bluetooth from "./lib/Bluetooth";
+import Sensor from "./lib/Bluetooth/Sensor";
 
 const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
-
-export interface Sensor {
-    id : string
-}
 
 export default class BaseStation {
     private pubSub: PubSub

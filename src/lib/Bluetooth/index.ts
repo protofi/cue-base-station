@@ -1,6 +1,6 @@
 import * as Noble from 'noble'
 import { Advertisement } from 'noble'
-import { Sensor } from '../../BaseStation';
+import Sensor from './Sensor';
 
 enum STATE {
 	POWER_ON = 'poweredOn'
@@ -10,9 +10,8 @@ export interface ScannerStrategy {
 	(peripheral: Noble.Peripheral) : boolean
 }
 
-
 export default class Bluetooth {
-
+	
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 	private deviceFoundCallback: (sensor: Sensor) => void
@@ -26,6 +25,12 @@ export default class Bluetooth {
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
 
+		this.stopScanning()
+
+		const sensor = new Sensor(peripheral)
+		
+		sensor.connect()
+
 		console.log('SERIVDE DATA', serviceData)
 
 		const serviceDataJSONArray = serviceData
@@ -37,9 +42,7 @@ export default class Bluetooth {
 		if(trigger === "4f49445541") {
 			console.log('AUDIO TRIGGER')
 			
-			this.audioTriggerCallback({
-				id : peripheral.id
-			})
+			this.audioTriggerCallback(sensor)
 		}
 	
 		if(trigger === "4e4f54545542") {
@@ -102,13 +105,18 @@ export default class Bluetooth {
 
 		Noble.stopScanning()
 
-		this.deviceFoundCallback({
-			id : peripheral.id
-		})
+		this.deviceFoundCallback(new Sensor(peripheral))
 
 		this.scan(this.defaultScannerStrategy)
 	}
 
+	/**
+	 * stopScanning
+	 */
+	private stopScanning()
+	{
+		Noble.stopScanning()
+	}
 	/**
 	 * scan
 	 */
