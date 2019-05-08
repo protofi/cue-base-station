@@ -129,8 +129,8 @@ export default class Bluetooth {
 	 */
 	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void)
 	{
-		if(scannerStrategy) this.scannerStrategy = scannerStrategy
-		if(deviceFoundCallback) this.deviceFoundCallback = deviceFoundCallback
+		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
+		this.deviceFoundCallback = (deviceFoundCallback) ? deviceFoundCallback : null
 
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 	}
