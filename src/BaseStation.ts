@@ -1,6 +1,6 @@
 import PubSub, { Topics } from "./lib/PubSub";
 import Websocket, { CueWebsocketActions } from "./lib/Websocket";
-import Bluetooth from "./lib/BluetoothTwo";
+import Bluetooth from "./lib/Bluetooth";
 
 const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
 
