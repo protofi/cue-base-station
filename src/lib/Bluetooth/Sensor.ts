@@ -9,8 +9,6 @@ export default class Sensor {
 
     constructor(peripheral: Noble.Peripheral)
     {
-		console.log('SENSOR CONTRUCTED')
-		
         this.peripheral = peripheral
         this.id = peripheral.id
 
@@ -20,7 +18,8 @@ export default class Sensor {
 
     public connect(): void
     {
-    		this.peripheral.connect(error => console.log)
+		console.log('CONNECT SENSOR')
+    	this.peripheral.connect(error => console.log)
     }
 
     private onConnect(keepConnectionAlive: boolean) {
