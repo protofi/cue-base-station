@@ -16,6 +16,7 @@ export default class Bluetooth {
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 	private deviceFoundCallback: (sensor: Sensor) => void
+	private audioTriggerCallback: (sensor: Sensor) => void
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return
@@ -34,8 +35,11 @@ export default class Bluetooth {
 		const trigger = serviceDataJSONArray[0].uuid
 
 		if(trigger === "4f49445541") {
-			// this.audioAlertCallback(peripheral.id)
 			console.log('AUDIO TRIGGER')
+			
+			this.audioTriggerCallback({
+				id : peripheral.id
+			})
 		}
 	
 		if(trigger === "4e4f54545542") {
@@ -118,5 +122,10 @@ export default class Bluetooth {
 	
 	public poweredOn(cb: () => void): any {
         this.stateChangeActions.set(STATE.POWER_ON, cb)
-    }
+	}
+
+	public onAlert(cb: (sensor: Sensor) => void): void {
+		this.audioTriggerCallback = cb
+	}
+
 }

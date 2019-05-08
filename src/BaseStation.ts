@@ -105,13 +105,13 @@ export default class BaseStation {
         //     console.log("Connecting to peripheral failed, we should restart everything now")
         // });
       
-        // this.bluetooth.onAudioAlert((sensorId) => {
-        //     console.log("Audio trigger.")
+        this.bluetooth.onAlert((sensor: Sensor) => {
+            console.log("Audio trigger.")
 
-        //     this.pubSub.publish(Topics.NOTIFICATION, {
-        //         id : sensorId
-        //     })
-        // })
+            this.pubSub.publish(Topics.NOTIFICATION, {
+                id : sensor.id
+            })
+        })
       
         // this.bluetooth.onPeripheralButton(() => {
         //     console.log("Button clicked")
