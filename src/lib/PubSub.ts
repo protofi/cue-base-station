@@ -65,11 +65,11 @@ export default class PubSub {
         })
 
         this.client.on('packetsend', message => {
-            console.log('packetsend', message.cmd, message.messageId)
+            // console.log('packetsend', message.cmd, message.messageId)
         })
 
         this.client.on('packetreceive', message => {
-            console.log('packetreceive', message.cmd, message.messageId)
+            // console.log('packetreceive', message.cmd, message.messageId)
         })
 
         // this.client.on('message', (topic, message: string, packet) => {

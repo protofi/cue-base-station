@@ -93,11 +93,11 @@ export default class Bluetooth {
 		Noble.on("discover", 	this.deviceDiscovered.bind(this))
 
         Noble.on("scanStart", () => {
-            console.log('SCANNING STARTED')
+            console.log('BLUETOOTH =============================> SCANNING STARTED')
         })
 
         Noble.on("scanStop", () => {
-            console.log('SCANNING STOPPED')
+            console.log('BLUETOOTH =============================> SCANNING STOPPED')
         })
     }
 
@@ -123,7 +123,9 @@ export default class Bluetooth {
 	 */
 	private stopScanning()
 	{
-		Noble.stopScanning()
+		Noble.stopScanning(() => {
+			console.log('SCANNER IS STOPPED')
+		})
 	}
 	/**
 	 * scan
