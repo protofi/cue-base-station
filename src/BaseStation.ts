@@ -53,7 +53,7 @@ export default class BaseStation {
         })
 
         this.bluetooth.poweredOn(() => {
-            this.bluetooth.scan(this.bluetooth.defaultScanFilter)
+            this.bluetooth.scan()
         })
     }
 
@@ -61,21 +61,21 @@ export default class BaseStation {
     {
         this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
             
-            console.log("Base Station is now in pairing mode")
+            console.log("PAIRING MODE activated")
 
-            this.bluetooth.stopScaning()
+            // this.bluetooth.stopScaning()
 
-            this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
-                const sensorId = peripheral.id
+            // this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
+            //     const sensorId = peripheral.id
 
-                this.pubSub.publish(Topics.NEW_SENSOR, {
-                    id : sensorId
-                })
-            }, true)
+            //     this.pubSub.publish(Topics.NEW_SENSOR, {
+            //         id : sensorId
+            //     })
+            // }, true)
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
-            console.log("Base Station is now in calibration mode")
+            console.log("CALIBRATIONS MODE activated")
 
             this.pubSub.publish(Topics.CALIBRATION, {
                 id              : sensorIdMock,
@@ -84,28 +84,28 @@ export default class BaseStation {
         })
 
         this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
-            this.bluetooth.disconnectPeripheral()
+            // this.bluetooth.disconnectPeripheral()
         })
 
         this.websocket.onError(this.errorHandler)
 
         this.pubSub.onError(this.errorHandler)
       
-        this.bluetooth.onConnectHangup(() => {
-            console.log("Connecting to peripheral failed, we should restart everything now")
-        });
+        // this.bluetooth.onConnectHangup(() => {
+        //     console.log("Connecting to peripheral failed, we should restart everything now")
+        // });
       
-        this.bluetooth.onAudioAlert((sensorId) => {
-            console.log("Audio trigger.")
+        // this.bluetooth.onAudioAlert((sensorId) => {
+        //     console.log("Audio trigger.")
 
-            this.pubSub.publish(Topics.NOTIFICATION, {
-                id : sensorId
-            })
-        })
+        //     this.pubSub.publish(Topics.NOTIFICATION, {
+        //         id : sensorId
+        //     })
+        // })
       
-        this.bluetooth.onPeripheralButton(() => {
-            console.log("Button clicked")
-        });
+        // this.bluetooth.onPeripheralButton(() => {
+        //     console.log("Button clicked")
+        // });
     }
 
     private errorHandler(error: Error): void

@@ -78,7 +78,9 @@ export default class Bluetooth {
 	}
 
 	/**
-	 * onDeviceFound
+	 * onDev
+	 * 
+	 * iceFound
 	 */
 	public onDeviceFound(cb: DeviceFoundCallback): void {
 		this.currentDeviceFoundCB = cb
@@ -100,7 +102,7 @@ export default class Bluetooth {
         this.stateChangeActions.set("poweredOn", cb)
     }
 
-	public scan(scanFilter: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
+	public scan(scanFilter?: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
 		
 		console.log('STARTING SCAN')
 
@@ -118,7 +120,7 @@ export default class Bluetooth {
 		}
 		
 		this.prevScanFilter 		= (once) ? this.currentScanFilter : null
-		this.currentScanFilter 		= scanFilter
+		this.currentScanFilter 		= (scanFilter) ? scanFilter : this.defaultScanFilter
 
 		if(cb) //if callback if parsed
 		{
