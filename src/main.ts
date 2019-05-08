@@ -1,7 +1,7 @@
 import BaseStation from "./BaseStation";
 import PubSub from "./lib/PubSub";
 import Websocket from "./lib/Websocket";
-import Bluetooth from "./lib/Bluetooth";
+import Bluetooth from "./lib/BluetoothTwo";
 
 console.log('Oh hi Main')
 

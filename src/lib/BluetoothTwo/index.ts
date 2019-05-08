@@ -1,41 +1,51 @@
 import * as Noble from 'noble'
+import { Advertisement } from 'noble'
 
 export default class Bluetooth {
+	private stateChangeActions: Map<string, () => void> = new Map()
 
-    private stateChangeActions: Map<string, () => void> = new Map()
+	constructor() {
+		// Noble.on("stateChange", this.onBleStateChange.bind(this))
+		// Noble.on("discover", this.deviceFound.bind(this))
+		// Noble.on("scanStart", this.setScanStarted.bind(this))
+		// Noble.on("scanStop", this.setScanStopped.bind(this))
+		this.mountHooks()
+	}
 
-    contructor()
+	private mountHooks()
     {
-        this.mountHooks()
-    }
+		Noble.on("stateChange", this.stateChange.bind(this))
+		Noble.on("discover", 	this.deviceDiscovered.bind(this))
 
-    public scan(scanFilter?: any, cb?: any, once?: boolean): void
-    {
-        Noble.startScanning([], true) // any service UUID, duplicates allowed
-    }
-
-    private mountHooks()
-    {
-        Noble.on("stateChange", (state: string) => {
-            console.log('STATE CHANGE:', state)
-            const action = this.stateChangeActions.get(state)
-            if(action) action()
+        Noble.on("scanStart", () => {
+            console.log('SCANNING STARTED')
         })
 
-        Noble.on("discover", (peripheral: Noble.Peripheral) => {
-
-        })
-
-        Noble.on("scanStart", (scan: string) => {
-            console.log('SCANNING STARTED', scan)
-        })
-
-        Noble.on("scanStop", (scan: string) => {
-            console.log('SCANNING STOPPED', scan)
+        Noble.on("scanStop", () => {
+            console.log('SCANNING STOPPED')
         })
     }
 
-    public poweredOn(cb: () => void): any {
+	private stateChange(state: string)
+	{
+		console.log('STATE CHANGE:', state)
+		const action = this.stateChangeActions.get(state)
+		if(action) action()
+	}
+
+	private deviceDiscovered(peripheral: Noble.Peripheral)
+	{
+
+	}
+
+	/**
+	 * scan
+	 */
+	public scan() {
+		Noble.startScanning([], true) // any service UUID, duplicates allowed
+	}
+	
+	public poweredOn(cb: () => void): any {
         this.stateChangeActions.set("poweredOn", cb)
     }
 }
