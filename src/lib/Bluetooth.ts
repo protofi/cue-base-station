@@ -71,11 +71,34 @@ export default class Bluetooth {
 	private peripheralButtonCallback: () => void
 
 	constructor() {
-		Noble.on("stateChange", this.onBleStateChange.bind(this))
-		Noble.on("discover", this.deviceFound.bind(this))
-		Noble.on("scanStart", this.setScanStarted.bind(this))
-		Noble.on("scanStop", this.setScanStopped.bind(this))
+		// Noble.on("stateChange", this.onBleStateChange.bind(this))
+		// Noble.on("discover", this.deviceFound.bind(this))
+		// Noble.on("scanStart", this.setScanStarted.bind(this))
+		// Noble.on("scanStop", this.setScanStopped.bind(this))
+		this.mountHooks()
 	}
+
+	private mountHooks()
+    {
+        Noble.on("stateChange", (state: string) => {
+            console.log('STATE CHANGE:', state)
+            const action = this.stateChangeActions.get(state)
+            if(action) action()
+        })
+
+        Noble.on("discover", (peripheral: Noble.Peripheral) => {
+
+        })
+
+        Noble.on("scanStart", (scan: string) => {
+            console.log('SCANNING STARTED', scan)
+        })
+
+        Noble.on("scanStop", (scan: string) => {
+            console.log('SCANNING STOPPED', scan)
+        })
+    }
+
 
 	/**
 	 * onDev
