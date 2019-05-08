@@ -114,7 +114,8 @@ export default class Bluetooth {
 
 		this.stopScanning()
 
-		this.deviceFoundCallback(new Sensor(peripheral))
+		if(this.deviceFoundCallback)
+			this.deviceFoundCallback(new Sensor(peripheral))
 	}
 
 	/**
