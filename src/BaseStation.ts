@@ -4,6 +4,10 @@ import Bluetooth from "./lib/Bluetooth";
 
 const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
 
+export interface Sensor {
+    id : string
+}
+
 export default class BaseStation {
     private pubSub: PubSub
     private websocket: Websocket
@@ -65,8 +69,8 @@ export default class BaseStation {
 
             // this.bluetooth.stopScaning()
 
-            this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (peripheral) => {
-                const sensorId = peripheral.id
+            this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (sensor: Sensor) => {
+                const sensorId = sensor.id
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     id : sensorId

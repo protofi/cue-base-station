@@ -1,5 +1,6 @@
 import * as Noble from 'noble'
 import { Advertisement } from 'noble'
+import { Sensor } from '../../BaseStation';
 
 enum STATE {
 	POWER_ON = 'poweredOn'
@@ -14,7 +15,7 @@ export default class Bluetooth {
 
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
-	private deviceFoundCallback: (peripheral: Noble.Peripheral) => {}
+	private deviceFoundCallback: (sensor: Sensor) => void
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return
@@ -97,13 +98,15 @@ export default class Bluetooth {
 
 		Noble.stopScanning()
 
-		this.deviceFoundCallback(peripheral)
+		this.deviceFoundCallback({
+			id : peripheral.id
+		})
 	}
 
 	/**
 	 * scan
 	 */
-	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (peripheral: Noble.Peripheral) => {})
+	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void)
 	{
 		if(scannerStrategy) this.scannerStrategy = scannerStrategy
 		if(deviceFoundCallback) this.deviceFoundCallback = deviceFoundCallback
