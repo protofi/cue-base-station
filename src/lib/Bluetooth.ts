@@ -132,9 +132,9 @@ export default class Bluetooth {
 	// 	this.peripheralButtonCallback = cb
 	// }
 	
-	// public poweredOn(cb: () => void): any {
-    //     this.stateChangeActions.set("poweredOn", cb)
-    // }
+	public poweredOn(cb: () => void): any {
+        this.stateChangeActions.set("poweredOn", cb)
+    }
 
 	// public scan(scanFilter?: ScanFilter, cb?: DeviceFoundCallback, once?: boolean): void {
 		
