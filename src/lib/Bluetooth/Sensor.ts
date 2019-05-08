@@ -26,18 +26,14 @@ export default class Sensor {
 
         console.log('SENSOR IS CONNECTED')
 
-        this.disconnect()
         // if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
-		// this.currentPeripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
-		// 	if(error) {
-		// 		console.log("There was an error discovering services: ", error)
-		// 	}
-		// 	else {
-		// 		this.disconnectPeripheral()
-		// 	}
-		// 	// if(services) populateServiceMap(services)
-		// })
+		this.peripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
+            if(error)
+				console.log("There was an error discovering services: ", error)
+            else
+                this.disconnect()
+		})
 	}
 
     public disconnect()

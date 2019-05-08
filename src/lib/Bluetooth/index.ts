@@ -24,11 +24,15 @@ export default class Bluetooth {
 
 		const { localName, serviceData } = peripheral.advertisement
 
+		console.log('DEVICE FOUND', localName)
+
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
 		if(this.periphralsBeingHandled.has(peripheral.id)) return
 
 		this.periphralsBeingHandled.add(peripheral.id)
+
+		console.log('periphralsBeingHandled', this.periphralsBeingHandled)
 
 		this.stopScanning()
 
@@ -78,10 +82,6 @@ export default class Bluetooth {
 	private stateChangeActions: Map<string, () => void> = new Map()
 
 	constructor() {
-		// Noble.on("stateChange", this.onBleStateChange.bind(this))
-		// Noble.on("discover", this.deviceFound.bind(this))
-		// Noble.on("scanStart", this.setScanStarted.bind(this))
-		// Noble.on("scanStop", this.setScanStopped.bind(this))
 		this.mountHooks()
 	}
 
