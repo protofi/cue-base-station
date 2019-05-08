@@ -151,24 +151,24 @@ export default class Bluetooth {
 		// /**
 		//  * Investigate service data, to see if audio or button trigger is present. 
 		//  */
-		// const serviceDataJSONArray = JSON.parse(JSON.stringify(peripheral.advertisement.serviceData))
+		const serviceDataJSONArray = JSON.parse(JSON.stringify(peripheral.advertisement.serviceData))
 	
-		// if(serviceDataJSONArray.length < 1) {
-		// 	return
-		// }
+		if(serviceDataJSONArray.length < 1) {
+			return
+		}
 		
 		// console.log("Service data: ", serviceDataJSONArray);
 
-		// const trigger = serviceDataJSONArray[0].uuid
+		const trigger = serviceDataJSONArray[0].uuid
 
-		// if(trigger === "4f49445541") {
-		// 	this.audioAlertCallback(peripheral.id)
-		// }
+		if(trigger === "4f49445541") {
+			this.audioAlertCallback(peripheral.id)
+		}
 	
-		// if(trigger === "4e4f54545542") {
-		// 	this.peripheralButtonCallback()
-		// }
-		// this.connectPeripheral(peripheral)
+		if(trigger === "4e4f54545542") {
+			this.peripheralButtonCallback()
+		}
+		this.connectPeripheral(peripheral)
 	}
 
 	public stopScaning() {
