@@ -18,14 +18,19 @@ export default class Bluetooth {
     {
         Noble.on("stateChange", (state: string) => {
             console.log('STATE CHANGE:', state)
+            const action = this.stateChangeActions.get(state)
+            if(action) action()
         })
-		Noble.on("discover", (peripheral: Noble.Peripheral) => {
+
+        Noble.on("discover", (peripheral: Noble.Peripheral) => {
 
         })
-		Noble.on("scanStart", (scan: string) => {
+
+        Noble.on("scanStart", (scan: string) => {
             console.log('SCANNING STARTED', scan)
         })
-		Noble.on("scanStop", (scan: string) => {
+
+        Noble.on("scanStop", (scan: string) => {
             console.log('SCANNING STOPPED', scan)
         })
     }
