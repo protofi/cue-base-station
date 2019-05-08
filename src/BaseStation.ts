@@ -67,8 +67,6 @@ export default class BaseStation {
             
             console.log("PAIRING MODE activated")
 
-            // this.bluetooth.stopScaning()
-
             this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (sensor: Sensor) => {
                 const sensorId = sensor.id
 

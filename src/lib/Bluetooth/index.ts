@@ -101,6 +101,8 @@ export default class Bluetooth {
 		this.deviceFoundCallback({
 			id : peripheral.id
 		})
+
+		this.scan(this.defaultScannerStrategy)
 	}
 
 	/**
