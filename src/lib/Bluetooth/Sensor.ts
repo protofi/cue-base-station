@@ -44,8 +44,8 @@ export default class Sensor {
 
     public disconnect()
     {
-		if(!this.peripheral) return
-        this.peripheral.disconnect()
+		console.log('DISCONNECT')
+		this.peripheral.disconnect()
     }
 
     private onDisconnect()
