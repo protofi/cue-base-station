@@ -24,15 +24,13 @@ export default class Bluetooth {
 
 		const { localName, serviceData } = peripheral.advertisement
 
-		console.log('DEVICE FOUND', localName)
-
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
 		if(this.periphralsBeingHandled.has(peripheral.id)) return
 
 		this.periphralsBeingHandled.add(peripheral.id)
 
-		console.log('periphralsBeingHandled', this.periphralsBeingHandled)
+		console.log('PERIPHRALS BEING HANDLED', this.periphralsBeingHandled)
 
 		this.stopScanning()
 

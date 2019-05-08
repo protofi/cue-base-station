@@ -4,8 +4,8 @@ export default class Sensor {
     public readonly id: string
 
     private peripheral: Noble.Peripheral
-    private characteristicMap: Map<string, Map<string, Noble.Characteristic>>;
-    private servicesMap: Map<string, Noble.Service>;
+    private characteristics: Array<Noble.Characteristic>
+    private services: Array<Noble.Service>
 
     constructor(peripheral: Noble.Peripheral)
     {
@@ -29,11 +29,16 @@ export default class Sensor {
 
         // if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
-		this.peripheral.discoverAllServicesAndCharacteristics((error, services, chararacteristics) => {
+		this.peripheral.discoverAllServicesAndCharacteristics((error: string, services: Noble.Service[], chararacteristics: Noble.Characteristic[]) => {
             if(error)
 				console.log("There was an error discovering services: ", error)
-            else
-                this.disconnect()
+			else
+			{
+				this.characteristics = chararacteristics
+				this.services = services				
+
+				this.disconnect()
+			}
 		})
 	}
 
@@ -45,9 +50,6 @@ export default class Sensor {
 
     private onDisconnect()
     {
-		this.characteristicMap = new Map<string, Map<string, Noble.Characteristic>>()
-		this.servicesMap = new Map<string, Noble.Service>()
-        
         console.log('SENSOR IS DISCONNECTED')
 	}
 }
