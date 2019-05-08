@@ -10,6 +10,7 @@ export default class Sensor {
     constructor(peripheral: Noble.Peripheral)
     {
 		console.log('SENSOR CONTRUCTED')
+		
         this.peripheral = peripheral
         this.id = peripheral.id
 

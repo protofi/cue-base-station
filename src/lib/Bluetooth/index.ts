@@ -26,7 +26,11 @@ export default class Bluetooth {
 
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
-		if(this.periphralsBeingHandled.has(peripheral.id)) return
+		
+		if(this.periphralsBeingHandled.has(peripheral.id))
+		{
+			console.log('SENSOR ALREADY BEING HANDLED', peripheral.id)
+		}
 
 		this.periphralsBeingHandled.add(peripheral.id)
 
