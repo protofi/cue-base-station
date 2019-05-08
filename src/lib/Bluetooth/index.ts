@@ -6,7 +6,7 @@ enum STATE {
 }
 
 export interface ScannerStrategy {
-	(peripheral: Noble.Peripheral) : void
+	(peripheral: Noble.Peripheral) : boolean
 }
 
 
@@ -14,6 +14,7 @@ export default class Bluetooth {
 
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
+	private deviceFoundCallback: (peripheral: Noble.Peripheral) => {}
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return
@@ -40,6 +41,8 @@ export default class Bluetooth {
 			// this.peripheralButtonCallback()
 			console.log('BUTTON TRIGGER')
 		}
+
+		return true
 	}
 
 	public pairingScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
@@ -52,7 +55,7 @@ export default class Bluetooth {
 
 		this.knownSensors.add(peripheral.id)
 
-		Noble.stopScanning()
+		return true
 	}
 
 	private scannerStrategy: ScannerStrategy = this.defaultScannerStrategy
@@ -90,16 +93,21 @@ export default class Bluetooth {
 
 	private deviceDiscovered(peripheral: Noble.Peripheral)
 	{
-		this.scannerStrategy(peripheral)
+		if(!this.scannerStrategy(peripheral)) return
+
+		Noble.stopScanning()
+
+		this.deviceFoundCallback(peripheral)
 	}
 
 	/**
 	 * scan
 	 */
-	public scan(scannerStrategy?: ScannerStrategy)
+	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (peripheral: Noble.Peripheral) => {})
 	{
 		if(scannerStrategy) this.scannerStrategy = scannerStrategy
-		
+		if(deviceFoundCallback) this.deviceFoundCallback = deviceFoundCallback
+
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 	}
 	

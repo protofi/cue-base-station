@@ -65,6 +65,14 @@ export default class BaseStation {
 
             // this.bluetooth.stopScaning()
 
+            this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (peripheral) => {
+                const sensorId = peripheral.id
+
+                this.pubSub.publish(Topics.NEW_SENSOR, {
+                    id : sensorId
+                })
+            })
+
             // this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
             //     const sensorId = peripheral.id
 
