@@ -129,32 +129,32 @@ export default class Bluetooth {
 		
 		console.log('STARTING SCAN')
 
-		if(Noble.state !== "poweredOn")
-		{
-			console.error("DENIED: Radio is not powered on")
-			this.scanning = false
-			return
-		}
+		// if(Noble.state !== "poweredOn")
+		// {
+		// 	console.error("DENIED: Radio is not powered on")
+		// 	this.scanning = false
+		// 	return
+		// }
 
-		if(this.scanning)
-		{
-			console.error("DENIED: Already scanning")
-			return
-		}
+		// if(this.scanning)
+		// {
+		// 	console.error("DENIED: Already scanning")
+		// 	return
+		// }
 		
-		this.prevScanFilter 		= (once) ? this.currentScanFilter : null
-		this.currentScanFilter 		= (scanFilter) ? scanFilter : this.defaultScanFilter
+		// this.prevScanFilter 		= (once) ? this.currentScanFilter : null
+		// this.currentScanFilter 		= (scanFilter) ? scanFilter : this.defaultScanFilter
 
-		if(cb) //if callback if parsed
-		{
-			console.log('SETTING SCAN CALLBACK')
-			this.prevDeviceFoundCB = (once) ? this.currentDeviceFoundCB : null
-			this.currentDeviceFoundCB = cb
-		}
+		// if(cb) //if callback if parsed
+		// {
+		// 	console.log('SETTING SCAN CALLBACK')
+		// 	this.prevDeviceFoundCB = (once) ? this.currentDeviceFoundCB : null
+		// 	this.currentDeviceFoundCB = cb
+		// }
 	
-		this.scannerStartTime = Date.now()
+		// this.scannerStartTime = Date.now()
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
-		this.scanning = true
+		// this.scanning = true
 	}
 
 	private deviceFound(peripheral: Noble.Peripheral) 
