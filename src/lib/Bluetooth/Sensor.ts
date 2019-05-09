@@ -73,6 +73,6 @@ export default class Sensor {
 		if(this.disconnectCallback)
 			this.disconnectCallback()
 		else
-		console.log('NO DISCONNECT CALLBACK')
+			console.log('NO DISCONNECT CALLBACK')
 	}
 }

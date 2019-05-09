@@ -31,14 +31,14 @@ export default class Bluetooth {
 
 		this.stopScanning()
 
-		const sensor = new Sensor(peripheral)
-		const _this = this
+		// const sensor = new Sensor(peripheral)
+		// const _this = this
 		
-		sensor.connect(() => {
-			_this.connectedSensor = sensor
-		}, () => {
-			_this.scan()
-		})
+		// sensor.connect(() => {
+		// 	_this.connectedSensor = sensor
+		// }, () => {
+		// 	_this.scan()
+		// })
 
 		console.log('SERIVDE DATA', serviceData)
 
@@ -48,20 +48,22 @@ export default class Bluetooth {
 		
 		const trigger = serviceDataJSONArray[0].uuid
 
+		console.log('TRIGGER', trigger)
+
 		if(trigger === "4f49445541")
 		{
 			console.log('AUDIO TRIGGER')
 			
-			if(this.audioTriggerCallback)
-				this.audioTriggerCallback(sensor)
+			// if(this.audioTriggerCallback)
+			// 	this.audioTriggerCallback(sensor)
 		}
 	
 		if(trigger === "4e4f54545542")
 		{
 			console.log('BUTTON TRIGGER')
 
-			if(this.buttonTriggerCallback)
-				this.buttonTriggerCallback(sensor)
+			// if(this.buttonTriggerCallback)
+			// 	this.buttonTriggerCallback(sensor)
 		}
 		
 		return true
