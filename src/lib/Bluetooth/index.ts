@@ -23,16 +23,17 @@ export default class Bluetooth {
 	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return null
 
 		const { localName } = peripheral.advertisement
 
 		if(localName != this.sensorName) return null
-		if(!this.knownSensors.has(peripheral.id)) return null
+
+		const sensor = new Sensor(peripheral)
+
+		if(!this.knownSensors.has(sensor.id)) return null
 
 		// this.stopScanning()
 
-		const sensor = new Sensor(peripheral)
 		// const _this = this
 		
 		// sensor.connect(() => {
@@ -61,14 +62,14 @@ export default class Bluetooth {
 	}
 
 	public pairingScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return null
 
-		const { localName, serviceData } = peripheral.advertisement
+		const { localName } = peripheral.advertisement
 
 		if(localName != this.sensorName) return null
-		if(this.knownSensors.has(peripheral.id)) return null
 
 		const sensor = new Sensor(peripheral)
+
+		if(this.knownSensors.has(sensor.id)) return null
 
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON)) return null
 
@@ -119,7 +120,9 @@ export default class Bluetooth {
 
 	private deviceDiscovered(peripheral: Noble.Peripheral)
 	{
-		const sensor:Sensor = this.scannerStrategy(peripheral)
+		if(!peripheral) return
+
+		const sensor: Sensor = this.scannerStrategy(peripheral)
 		if(!sensor) return
 
 		if(this.deviceFoundCallback)
@@ -152,6 +155,8 @@ export default class Bluetooth {
 	 */
 	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void)
 	{
+		console.log('SCAN INITIALIZED', 'strategy:', !(!scannerStrategy), 'callack:', !(!deviceFoundCallback))
+
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
 		this.deviceFoundCallback = (deviceFoundCallback) ? deviceFoundCallback : null
 
