@@ -53,21 +53,21 @@ export default class Sensor {
 
 		const _this = this
 
-		this.peripheral.discoverAllServicesAndCharacteristics(
-		(
-			error: string,
-			services: Noble.Service[],
-			chararacteristics: Noble.Characteristic[]
-		) => {
+		// this.peripheral.discoverAllServicesAndCharacteristics(
+		// (
+		// 	error: string,
+		// 	services: Noble.Service[],
+		// 	chararacteristics: Noble.Characteristic[]
+		// ) => {
 
-			if(error) console.log("There was an error discovering services: ", error)
+		// 	if(error) console.log("There was an error discovering services: ", error)
 
-			_this.characteristics = chararacteristics
-			_this.services = services
+		// 	_this.characteristics = chararacteristics
+		// 	_this.services = services
 
 			if(_this.connectCallback)
 				_this.connectCallback()
-		})
+		// })
 	}
 
     public disconnect(cb?: () => void)
