@@ -75,16 +75,7 @@ export default class Bluetooth {
 
 		this.knownSensors.add(sensor.id)
 
-		this.stopScanning(() => {
-
-			sensor.connect(() => {
-
-				sensor.disconnect()
-			}, () => {
-				
-				this.scan()
-			})
-		})
+		this.stopScanning()
 		
 		return sensor
 	}
@@ -146,11 +137,9 @@ export default class Bluetooth {
 	/**
 	 * stopScanning
 	 */
-	private stopScanning(callback?: () => void)
+	private stopScanning()
 	{
-		Noble.stopScanning(() => {
-			console.log('STOP SCANNING INNER CALLBACK')
-		})
+		Noble.stopScanning()
 	}
 	/**
 	 * scan

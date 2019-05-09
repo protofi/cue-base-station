@@ -71,7 +71,7 @@ export default class BaseStation {
                     id : sensorId
                 })
 
-                this.bluetooth.scan()
+                // this.bluetooth.scan()
             })
 
             // this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
