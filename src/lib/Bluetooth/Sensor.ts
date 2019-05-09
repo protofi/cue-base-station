@@ -22,6 +22,8 @@ export default class Sensor {
 
         this.peripheral.once("connect",     this.onConnect.bind(this))
 		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
+
+		console.log('SENSOR INSTANTIATED')
 	}
 	
 	public touch(callback: () => void) {
