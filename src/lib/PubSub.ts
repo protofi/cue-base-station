@@ -151,7 +151,7 @@ export default class PubSub {
     {
         this.checkAuth()
 
-        console.log('Published', payload, 'to', topic)
+        console.log('PUBSUB PUBLISHED', payload, 'to', topic)
 
         const payloadString = JSON.stringify(payload)
 

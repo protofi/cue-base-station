@@ -39,7 +39,6 @@ export default class Sensor {
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
-		console.log('CONNECT SENSOR', this.connectCallback, this.disconnectCallback)
     	this.peripheral.connect(error => console.log)
     }
 

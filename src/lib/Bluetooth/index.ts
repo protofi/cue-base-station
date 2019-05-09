@@ -87,8 +87,8 @@ export default class Bluetooth {
 
 	constructor() {
 		
-		Noble.on("stateChange", this.stateChange.bind(this))
-		Noble.on("discover", 	this.deviceDiscovered.bind(this))
+		Noble.on("stateChange", this.onStateChange.bind(this))
+		Noble.on("discover", 	this.onDiscover.bind(this))
 
         Noble.on("scanStart", () => {
 			this.scanning = true
@@ -101,14 +101,14 @@ export default class Bluetooth {
         })
     }
 
-	private stateChange(state: string)
+	private onStateChange(state: string)
 	{
 		console.log('STATE CHANGE:', state)
 		const action = this.stateChangeActions.get(state)
 		if(action) action()
 	}
 
-	private deviceDiscovered(peripheral: Noble.Peripheral)
+	private onDiscover(peripheral: Noble.Peripheral)
 	{
 		if(!peripheral) return
 
