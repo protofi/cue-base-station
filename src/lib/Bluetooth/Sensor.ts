@@ -21,8 +21,11 @@ export default class Sensor {
         this.id = peripheral.id
 	}
 	
-	public touch(callback: () => void) {
-
+	/**
+	 * touch
+	 */
+	public touch(callback: () => void)
+	{
 		this.connect(() => {
 
 			this.disconnect(() => {
@@ -40,14 +43,11 @@ export default class Sensor {
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
 		this.peripheral.connect(error => console.log)
-
-
 	}
 
 	private onConnect()
 	{
-		console.log('state', this.peripheral.state)
-        console.log('SENSOR IS CONNECTED')
+		console.log('SENSOR STATE', this.peripheral.state)
 
 		console.log('RETRIEVING SENSOR DATA')
 
@@ -65,8 +65,8 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			if(this.connectCallback)
-				this.connectCallback()
+			if(_this.connectCallback)
+				_this.connectCallback()
 		})
 	}
 
@@ -77,7 +77,7 @@ export default class Sensor {
 
     private onDisconnect()
     {
-        console.log('SENSOR IS DISCONNECTED')
+		console.log('SENSOR STATE', this.peripheral.state)
 	
 		if(this.disconnectCallback)
 			this.disconnectCallback()
