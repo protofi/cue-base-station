@@ -53,14 +53,15 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			console.log('CALLING DISCONNECT')
+			console.log('CALLING DISCONNECT', _this)
+
 			_this.disconnect()
 		})
 	}
 
     public disconnect()
     {
-		console.log('DISCONNECT')
+		console.log('DISCONNECTING')
 
 		this.peripheral.disconnect()
     }

@@ -93,7 +93,7 @@ export default class BaseStation {
         })
 
         this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
-            // this.bluetooth.disconnectPeripheral()
+            this.bluetooth.disconnectPeripheral()
         })
 
         this.websocket.onError(this.errorHandler)

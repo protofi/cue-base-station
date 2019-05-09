@@ -15,9 +15,11 @@ export default class Bluetooth {
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 
-	private deviceFoundCallback: 	(sensor: Sensor) => void
-	private audioTriggerCallback: 	(sensor: Sensor) => void
-	private buttonTriggerCallback: 	(sensor: Sensor) => void
+	private connectedSensor: Sensor = null
+
+	private deviceFoundCallback: 	(sensor: Sensor) => void = null
+	private audioTriggerCallback: 	(sensor: Sensor) => void = null
+	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return
@@ -30,8 +32,11 @@ export default class Bluetooth {
 		this.stopScanning()
 
 		const sensor = new Sensor(peripheral)
+		const _this = this
 		
-		sensor.connect(null, () => {
+		sensor.connect(() => {
+			_this.connectedSensor = sensor
+		}, () => {
 			this.stopScanning()
 		})
 
@@ -112,6 +117,20 @@ export default class Bluetooth {
 
 		if(this.deviceFoundCallback)
 			this.deviceFoundCallback(new Sensor(peripheral))
+	}
+
+	public disconnectPeripheral()
+	{
+		console.log('DISCONNECTING SENSOR FROM BLE')
+
+		if(this.connectedSensor)
+		{
+			this.connectedSensor.disconnect()
+		}
+		else
+		{
+			console.log('NO SENSOR FOUND')
+		}
 	}
 
 	/**
