@@ -17,8 +17,6 @@ export default class Bluetooth {
 	private deviceFoundCallback: (sensor: Sensor) => void
 	private audioTriggerCallback: (sensor: Sensor) => void
 
-	private periphralsBeingHandled: Set<string> = new Set()
-
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
 		if(peripheral === undefined) return
 
@@ -26,15 +24,6 @@ export default class Bluetooth {
 
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
-
-		if(this.periphralsBeingHandled.has(peripheral.id))
-		{
-			console.log('SENSOR ALREADY BEING HANDLED', peripheral.id)
-		}
-
-		this.periphralsBeingHandled.add(peripheral.id)
-
-		console.log('PERIPHRALS BEING HANDLED', this.periphralsBeingHandled)
 
 		this.stopScanning()
 
@@ -60,8 +49,6 @@ export default class Bluetooth {
 			// this.peripheralButtonCallback()
 			console.log('BUTTON TRIGGER')
 		}
-
-		this.periphralsBeingHandled.delete(peripheral.id)
 		
 		return true
 	}
@@ -121,11 +108,9 @@ export default class Bluetooth {
 	/**
 	 * stopScanning
 	 */
-	private stopScanning()
+	private stopScanning(callback?: () => void)
 	{
-		Noble.stopScanning(() => {
-			console.log('SCANNER IS STOPPED')
-		})
+		Noble.stopScanning(callback)
 	}
 	/**
 	 * scan
