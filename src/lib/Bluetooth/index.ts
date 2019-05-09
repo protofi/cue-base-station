@@ -1,6 +1,7 @@
 import * as Noble from 'noble'
 import { Advertisement } from 'noble'
 import Sensor from './Sensor';
+import { disconnect } from 'cluster';
 
 enum STATE {
 	POWER_ON = 'poweredOn'
@@ -70,15 +71,28 @@ export default class Bluetooth {
 	}
 
 	public pairingScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return
+		if(peripheral === undefined) return false
 
 		const { localName, serviceData } = peripheral.advertisement
 
-		if(localName != this.sensorName) return
-		if(this.knownSensors.has(peripheral.id)) return
+		if(localName != this.sensorName) return false
+		if(this.knownSensors.has(peripheral.id)) return false
 
 		this.knownSensors.add(peripheral.id)
 
+		const sensor = new Sensor(peripheral)
+
+		this.stopScanning(() => {
+
+			sensor.connect(() => {
+
+				sensor.disconnect()
+			}, () => {
+				
+				this.scan()
+			})
+		})
+		
 		return true
 	}
 
@@ -115,8 +129,8 @@ export default class Bluetooth {
 	{
 		if(!this.scannerStrategy(peripheral)) return
 
-		// if(this.deviceFoundCallback)
-			// this.deviceFoundCallback(new Sensor(peripheral))
+		if(this.deviceFoundCallback)
+			this.deviceFoundCallback(new Sensor(peripheral))
 	}
 
 	public disconnectPeripheral()
