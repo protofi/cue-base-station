@@ -70,17 +70,10 @@ export default class BaseStation {
                     id : sensorId
                 })
             })
-
-            // this.bluetooth.scan(this.bluetooth.pairingScanFilter, (peripheral) => {
-            //     const sensorId = peripheral.id
-
-            //     this.pubSub.publish(Topics.NEW_SENSOR, {
-            //         id : sensorId
-            //     })
-            // }, true)
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
+            
             console.log("CALIBRATIONS MODE activated")
 
             this.pubSub.publish(Topics.CALIBRATION, {
@@ -102,7 +95,6 @@ export default class BaseStation {
         // });
       
         this.bluetooth.onAlert((sensor: Sensor) => {
-            console.log("Audio trigger.")
 
             this.pubSub.publish(Topics.NOTIFICATION, {
                 id : sensor.id

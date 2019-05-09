@@ -15,7 +15,7 @@ export default class Bluetooth {
 	
 	private scanning: boolean = false
 
-	private sensorName = 'home-cue'
+	private cueSensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 
 	private connectedSensor: Sensor = null
@@ -28,36 +28,32 @@ export default class Bluetooth {
 
 		const { localName } = peripheral.advertisement
 
-		if(localName != this.sensorName) return null
+		if(localName != this.cueSensorName) return null
 
 		const sensor = new Sensor(peripheral)
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		// this.stopScanning()
-
-		// const _this = this
+		this.stopScanning()
 		
-		// sensor.connect(() => {
-		// 	_this.connectedSensor = sensor
-		// }, () => {
-		// 	_this.scan()
-		// })
+		sensor.touch(() => {
+			this.scan()
+		})
 
 		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
 		{
 			console.log('AUDIO TRIGGER')
 			
-			// if(this.audioTriggerCallback)
-			// 	this.audioTriggerCallback(sensor)
+			if(this.audioTriggerCallback)
+				this.audioTriggerCallback(sensor)
 		}
 	
 		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
 			console.log('BUTTON TRIGGER')
 
-			// if(this.buttonTriggerCallback)
-			// 	this.buttonTriggerCallback(sensor)
+			if(this.buttonTriggerCallback)
+				this.buttonTriggerCallback(sensor)
 		}
 		
 		return sensor
@@ -67,7 +63,7 @@ export default class Bluetooth {
 
 		const { localName } = peripheral.advertisement
 
-		if(localName != this.sensorName) return null
+		if(localName != this.cueSensorName) return null
 
 		const sensor: Sensor = new Sensor(peripheral)
 
@@ -90,11 +86,7 @@ export default class Bluetooth {
 	private stateChangeActions: Map<string, () => void> = new Map()
 
 	constructor() {
-		this.mountHooks()
-	}
-
-	private mountHooks()
-    {
+		
 		Noble.on("stateChange", this.stateChange.bind(this))
 		Noble.on("discover", 	this.deviceDiscovered.bind(this))
 
