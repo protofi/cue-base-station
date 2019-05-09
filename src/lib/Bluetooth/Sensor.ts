@@ -21,8 +21,8 @@ export default class Sensor {
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
     {
-		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
+		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
 		console.log('CONNECT SENSOR')
     	this.peripheral.connect(error => console.log)
@@ -30,7 +30,6 @@ export default class Sensor {
 
 	private onConnect(keepConnectionAlive: boolean)
 	{
-
         console.log('SENSOR IS CONNECTED')
 
 		if(this.connectCallback)
@@ -38,8 +37,12 @@ export default class Sensor {
 
 			// if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
+		console.log('RETRIEVING SENSOR DATA')
+
 		this.peripheral.discoverAllServicesAndCharacteristics((error: string, services: Noble.Service[], chararacteristics: Noble.Characteristic[]) => {
-            if(error)
+			console.log('GOT THEM')
+
+			if(error)
 				console.log("There was an error discovering services: ", error)
 			else
 			{
@@ -54,6 +57,7 @@ export default class Sensor {
     public disconnect()
     {
 		console.log('DISCONNECT')
+
 		this.peripheral.disconnect()
     }
 
