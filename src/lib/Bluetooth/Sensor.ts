@@ -41,7 +41,12 @@ export default class Sensor {
 
 		const _this = this
 
-		this.peripheral.discoverAllServicesAndCharacteristics((error: string, services: Noble.Service[], chararacteristics: Noble.Characteristic[]) => {
+		this.peripheral.discoverAllServicesAndCharacteristics(
+		(
+			error: string,
+			services: Noble.Service[],
+			chararacteristics: Noble.Characteristic[]
+		) => {
 
 			if(error) console.log("There was an error discovering services: ", error)
 
