@@ -39,11 +39,14 @@ export default class Sensor {
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
-    	this.peripheral.connect(error => console.log)
-    }
+		this.peripheral.connect(error => console.log)
+
+
+	}
 
 	private onConnect()
 	{
+		console.log('state', this.peripheral.state)
         console.log('SENSOR IS CONNECTED')
 
 		console.log('RETRIEVING SENSOR DATA')
