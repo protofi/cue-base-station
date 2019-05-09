@@ -33,8 +33,8 @@ export default class Sensor {
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
     {
-		this.peripheral.once("connect",     this.onConnect.bind(this))
-		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
+		this.peripheral.on("connect",     this.onConnect.bind(this))
+		this.peripheral.on("disconnect",  this.onDisconnect.bind(this))
 
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
@@ -46,8 +46,6 @@ export default class Sensor {
 	private onConnect()
 	{
         console.log('SENSOR IS CONNECTED')
-
-		// if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
 		console.log('RETRIEVING SENSOR DATA')
 
@@ -65,9 +63,6 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			console.log('CALLING DISCONNECT')
-
-			
 			if(this.connectCallback)
 				this.connectCallback()
 		})
@@ -75,8 +70,6 @@ export default class Sensor {
 
     public disconnect(cb?: () => void)
     {
-		console.log('DISCONNECTING')
-
 		this.peripheral.disconnect(cb)
     }
 
