@@ -5,6 +5,7 @@ export enum TRIGGER {
 	BUTTON 	= '4e4f54545542'
 }
 export default class Sensor {
+	
     public readonly id: string
 
     private peripheral: Noble.Peripheral
@@ -21,7 +22,17 @@ export default class Sensor {
 
         this.peripheral.once("connect",     this.onConnect.bind(this))
 		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
-    }
+	}
+	
+	public touch(callback: () => void) {
+
+		this.connect(() => {
+
+			this.disconnect(() => {
+				callback()
+			})
+		})
+	}
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
     {
@@ -32,14 +43,11 @@ export default class Sensor {
     	this.peripheral.connect(error => console.log)
     }
 
-	private onConnect(keepConnectionAlive: boolean)
+	private onConnect()
 	{
         console.log('SENSOR IS CONNECTED')
 
-		if(this.connectCallback)
-			this.connectCallback()
-
-			// if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
+		// if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
 		console.log('RETRIEVING SENSOR DATA')
 
@@ -59,15 +67,17 @@ export default class Sensor {
 
 			console.log('CALLING DISCONNECT')
 
-			_this.disconnect()
+			
+			if(this.connectCallback)
+				this.connectCallback()
 		})
 	}
 
-    public disconnect()
+    public disconnect(cb?: () => void)
     {
 		console.log('DISCONNECTING')
 
-		this.peripheral.disconnect()
+		this.peripheral.disconnect(cb)
     }
 
     private onDisconnect()
@@ -92,16 +102,5 @@ export default class Sensor {
 		const t = serviceData[0].uuid
 
 		return (trigger == t)
-	}
-
-	public getTrigger(): String
-	{
-		const { serviceData } = this.peripheral.advertisement
-
-		if(serviceData.length < 1) return null
-		
-		const trigger = serviceData[0].uuid
-
-		return trigger
 	}
 }
