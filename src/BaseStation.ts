@@ -5,6 +5,10 @@ import Sensor from "./lib/Bluetooth/Sensor";
 
 const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
 
+enum TIMER {
+    PAIRING = 'pairing'
+}
+
 export default class BaseStation {
     private pubSub: PubSub
     private websocket: Websocket
@@ -12,6 +16,8 @@ export default class BaseStation {
     
     private deviceUUID: string          = process.env.RESIN_DEVICE_UUID
     private deviceUUIDPrefix: string    = process.env.DEVICE_UUID_PREFIX
+
+    private timers: Map<TIMER, NodeJS.Timeout> = new Map<TIMER, NodeJS.Timeout>()
 
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
@@ -70,6 +76,10 @@ export default class BaseStation {
                     id : sensorId
                 })
             })
+
+            this.startTimer(TIMER.PAIRING, () => {
+                this.bluetooth.scan()
+            }, 30)
         })
         
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
@@ -109,6 +119,25 @@ export default class BaseStation {
     private errorHandler(error: Error): void
     {
         console.log('ERROR', error.message)
+    }
+
+    private startTimer(name: TIMER, callback: () => void, seconds: number)
+    {
+        const timer = setTimeout(callback, seconds * 1000)
+
+        this.timers.set(name, timer)
+    }
+
+    private clearTimer(name?: TIMER)
+    {
+        const timer = (name) ? this.timers.get(name) : null
+
+        if(timer) clearTimeout(timer)
+        else {
+            this.timers.forEach((timer) => {
+                clearTimeout(timer)
+            })
+        }
     }
 }
 
