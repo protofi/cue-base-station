@@ -34,7 +34,7 @@ export default class Sensor {
         console.log('SENSOR IS CONNECTED')
 
 		if(this.connectCallback)
-			this.connectCallback(this)
+			this.connectCallback()
 
 			// if(this.currentDeviceFoundCB) this.currentDeviceFoundCB(this.currentPeripheral)
 
@@ -62,6 +62,6 @@ export default class Sensor {
         console.log('SENSOR IS DISCONNECTED')
 	
 		if(this.disconnectCallback)
-			this.disconnectCallback(this)
+			this.disconnectCallback()
 	}
 }
