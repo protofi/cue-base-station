@@ -24,7 +24,7 @@ export default class Sensor {
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
-		console.log('CONNECT SENSOR')
+		console.log('CONNECT SENSOR', this.connectCallback, this.disconnectCallback)
     	this.peripheral.connect(error => console.log)
     }
 
@@ -72,5 +72,7 @@ export default class Sensor {
 	
 		if(this.disconnectCallback)
 			this.disconnectCallback()
+		else
+		console.log('NO DISCONNECT CALLBACK')
 	}
 }
