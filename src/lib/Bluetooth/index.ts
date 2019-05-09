@@ -148,7 +148,9 @@ export default class Bluetooth {
 	 */
 	private stopScanning(callback?: () => void)
 	{
-		Noble.stopScanning(callback)
+		Noble.stopScanning(() => {
+			console.log('STOP SCANNING INNER CALLBACK')
+		})
 	}
 	/**
 	 * scan
