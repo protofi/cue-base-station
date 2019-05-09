@@ -53,6 +53,7 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
+			console.log('CALLING DISCONNECT')
 			_this.disconnect()
 		})
 	}
