@@ -37,7 +37,7 @@ export default class Bluetooth {
 		sensor.connect(() => {
 			_this.connectedSensor = sensor
 		}, () => {
-			this.stopScanning()
+			_this.scan()
 		})
 
 		console.log('SERIVDE DATA', serviceData)
