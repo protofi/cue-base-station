@@ -99,10 +99,12 @@ export default class Bluetooth {
 		Noble.on("discover", 	this.deviceDiscovered.bind(this))
 
         Noble.on("scanStart", () => {
+			this.scanning = true
             console.log('BLUETOOTH =============================> SCANNING STARTED')
         })
 
         Noble.on("scanStop", () => {
+			this.scanning = false
             console.log('BLUETOOTH =============================> SCANNING STOPPED')
         })
     }
@@ -144,6 +146,7 @@ export default class Bluetooth {
 	 */
 	private stopScanning()
 	{
+		this.scanning = false
 		Noble.stopScanning()
 	}
 	/**
@@ -163,7 +166,6 @@ export default class Bluetooth {
 		}
 
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
-
 		this.scanning = true
 	}
 	

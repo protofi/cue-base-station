@@ -19,8 +19,6 @@ export default class Sensor {
     {
         this.peripheral = peripheral
         this.id = peripheral.id
-
-		console.log('SENSOR INSTANTIATED')
 	}
 	
 	public touch(callback: () => void) {
@@ -37,7 +35,7 @@ export default class Sensor {
     {
 		this.peripheral.once("connect",     this.onConnect.bind(this))
 		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
-		
+
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
