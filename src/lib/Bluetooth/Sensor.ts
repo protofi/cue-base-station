@@ -1,5 +1,9 @@
 import * as Noble from 'noble'
 
+export enum TRIGGER {
+	AUDIO 	= '4f49445541',
+	BUTTON 	= '4e4f54545542'
+}
 export default class Sensor {
     public readonly id: string
 
@@ -74,5 +78,30 @@ export default class Sensor {
 			this.disconnectCallback()
 		else
 			console.log('NO DISCONNECT CALLBACK')
+	}
+
+	/**
+	 * wasTriggerBy
+	 */
+	public wasTriggerBy(trigger: TRIGGER): boolean
+	{
+		const { serviceData } = this.peripheral.advertisement
+
+		if(serviceData.length < 1) return false
+		
+		const t = serviceData[0].uuid
+
+		return (trigger == t)
+	}
+
+	public getTrigger(): String
+	{
+		const { serviceData } = this.peripheral.advertisement
+
+		if(serviceData.length < 1) return null
+		
+		const trigger = serviceData[0].uuid
+
+		return trigger
 	}
 }

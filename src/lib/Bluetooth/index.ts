@@ -1,6 +1,6 @@
 import * as Noble from 'noble'
 import { Advertisement } from 'noble'
-import Sensor from './Sensor';
+import Sensor, { TRIGGER } from './Sensor';
 import { disconnect } from 'cluster';
 
 enum STATE {
@@ -8,7 +8,7 @@ enum STATE {
 }
 
 export interface ScannerStrategy {
-	(peripheral: Noble.Peripheral) : boolean
+	(peripheral: Noble.Peripheral) : Sensor
 }
 
 export default class Bluetooth {
@@ -23,16 +23,16 @@ export default class Bluetooth {
 	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
 
 	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return
+		if(peripheral === undefined) return null
 
-		const { localName, serviceData } = peripheral.advertisement
+		const { localName } = peripheral.advertisement
 
-		if(localName != this.sensorName) return
-		if(!this.knownSensors.has(peripheral.id)) return
+		if(localName != this.sensorName) return null
+		if(!this.knownSensors.has(peripheral.id)) return null
 
 		// this.stopScanning()
 
-		// const sensor = new Sensor(peripheral)
+		const sensor = new Sensor(peripheral)
 		// const _this = this
 		
 		// sensor.connect(() => {
@@ -41,17 +41,7 @@ export default class Bluetooth {
 		// 	_this.scan()
 		// })
 
-		console.log('SERIVDE DATA', serviceData)
-
-		const serviceDataJSONArray = serviceData
-	
-		if(serviceDataJSONArray.length < 1) return
-		
-		const trigger = serviceDataJSONArray[0].uuid
-
-		console.log('TRIGGER', trigger)
-
-		if(trigger === "4f49445541")
+		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
 		{
 			console.log('AUDIO TRIGGER')
 			
@@ -59,7 +49,7 @@ export default class Bluetooth {
 			// 	this.audioTriggerCallback(sensor)
 		}
 	
-		if(trigger === "4e4f54545542")
+		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
 			console.log('BUTTON TRIGGER')
 
@@ -67,20 +57,22 @@ export default class Bluetooth {
 			// 	this.buttonTriggerCallback(sensor)
 		}
 		
-		return true
+		return sensor
 	}
 
 	public pairingScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
-		if(peripheral === undefined) return false
+		if(peripheral === undefined) return null
 
 		const { localName, serviceData } = peripheral.advertisement
 
-		if(localName != this.sensorName) return false
-		if(this.knownSensors.has(peripheral.id)) return false
-
-		this.knownSensors.add(peripheral.id)
+		if(localName != this.sensorName) return null
+		if(this.knownSensors.has(peripheral.id)) return null
 
 		const sensor = new Sensor(peripheral)
+
+		if(!sensor.wasTriggerBy(TRIGGER.BUTTON)) return null
+
+		this.knownSensors.add(sensor.id)
 
 		this.stopScanning(() => {
 
@@ -93,7 +85,7 @@ export default class Bluetooth {
 			})
 		})
 		
-		return true
+		return sensor
 	}
 
 	private scannerStrategy: ScannerStrategy = this.defaultScannerStrategy
@@ -127,10 +119,11 @@ export default class Bluetooth {
 
 	private deviceDiscovered(peripheral: Noble.Peripheral)
 	{
-		if(!this.scannerStrategy(peripheral)) return
+		const sensor:Sensor = this.scannerStrategy(peripheral)
+		if(!sensor) return
 
 		if(this.deviceFoundCallback)
-			this.deviceFoundCallback(new Sensor(peripheral))
+			this.deviceFoundCallback(sensor)
 	}
 
 	public disconnectPeripheral()
