@@ -29,7 +29,7 @@ export default class Bluetooth {
 		if(localName != this.sensorName) return
 		if(!this.knownSensors.has(peripheral.id)) return
 
-		this.stopScanning()
+		// this.stopScanning()
 
 		// const sensor = new Sensor(peripheral)
 		// const _this = this
