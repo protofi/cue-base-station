@@ -13,6 +13,8 @@ export interface ScannerStrategy {
 
 export default class Bluetooth {
 	
+	private scanning: boolean = false
+
 	private sensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 
@@ -32,7 +34,7 @@ export default class Bluetooth {
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		this.stopScanning()
+		// this.stopScanning()
 
 		// const _this = this
 		
@@ -154,7 +156,15 @@ export default class Bluetooth {
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
 		this.deviceFoundCallback = (deviceFoundCallback) ? deviceFoundCallback : null
 
+		if(this.scanning)
+		{
+			console.log('BLUETOOTH =============================> SCANNING CONTINUED')
+			return
+		}
+
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
+
+		this.scanning = true
 	}
 	
 	public poweredOn(cb: () => void): any {

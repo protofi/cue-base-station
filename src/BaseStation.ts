@@ -19,7 +19,6 @@ export default class BaseStation {
         this.pubSub.setDeviceUUID(this.getId())
 
         this.websocket = websocket
-
         this.bluetooth = bluetooth
 
         this.mountHooks()

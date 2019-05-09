@@ -20,9 +20,6 @@ export default class Sensor {
         this.peripheral = peripheral
         this.id = peripheral.id
 
-        this.peripheral.once("connect",     this.onConnect.bind(this))
-		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
-
 		console.log('SENSOR INSTANTIATED')
 	}
 	
@@ -38,6 +35,9 @@ export default class Sensor {
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
     {
+		this.peripheral.once("connect",     this.onConnect.bind(this))
+		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
+		
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
