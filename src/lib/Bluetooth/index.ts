@@ -55,9 +55,7 @@ export default class Bluetooth {
 			{
 				console.log('BUTTON CALLBACK NOT CALLED')
 			}
-		}
-	
-		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
+		}else if(sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
 			console.log('BUTTON TRIGGER')
 
@@ -70,6 +68,10 @@ export default class Bluetooth {
 			{
 				console.log('BUTTON CALLBACK NOT CALLED')
 			}
+		}
+		else
+		{
+			console.log('UNKNOWN TRIGGER')
 		}
 		
 		return sensor
