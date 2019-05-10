@@ -91,6 +91,7 @@ export default class Bluetooth {
 		console.log('UNKNOWN SENSOR FOUND:', sensor.id)
 
 		console.log('SERVICE DATA', sensor.getServiceData())
+		console.log('SERVICE DATA [0]', sensor.getServiceData()[0].data.toString('utf8'))
 
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
