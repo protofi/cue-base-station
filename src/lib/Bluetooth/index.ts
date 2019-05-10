@@ -92,7 +92,8 @@ export default class Bluetooth {
 
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
-			console.log('NOT TRIGGERS BY BUTTON', sensor.getTrigger())
+			console.log('NOT TRIGGERS BY BUTTON')
+			console.log('TRIGGERED BY: ', sensor.getTrigger())
 			return null
 		}
 
