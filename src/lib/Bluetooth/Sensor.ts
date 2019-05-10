@@ -34,9 +34,8 @@ export default class Sensor {
 
 			this.disconnect(() => {
 				console.log('INNER DISCONNECT CALLBACK', !(!callback))
-				callback()
 			})
-		})
+		}, callback)
 	}
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
