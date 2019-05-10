@@ -94,10 +94,17 @@ export default class Sensor {
 
 	public getTrigger(): TRIGGER
 	{
+		
 		const { serviceData } = this.peripheral.advertisement
 
+		const serviceDataJSONArray = JSON.parse(JSON.stringify(serviceData))
+	
+		// console.log("Service data: ", serviceDataJSONArray);
+
 		if(serviceData.length < 1) return null
+
+		const trigger = serviceDataJSONArray[0].uuid
 		
-		return serviceData[0].uuid as TRIGGER
+		return trigger as TRIGGER
 	}
 }

@@ -95,10 +95,8 @@ export default class Bluetooth {
 			console.log('NOT TRIGGERS BY BUTTON')
 			return null
 		}
-		else
-		{
-			console.log('TRIGGERS BY BUTTON')
-		}
+
+		console.log('TRIGGERS BY BUTTON')
 		
 		this.knownSensors.add(sensor.id)
 
