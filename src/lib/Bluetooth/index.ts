@@ -42,14 +42,20 @@ export default class Bluetooth {
 			this.scan()
 		})
 
-		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
-			this.audioTriggerCallback(sensor)
-
-		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
-			this.buttonTriggerCallback(sensor)
-		
 		console.log('TRIGGER:', sensor.getTrigger())
+
+		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
+		{
+			if(this.audioTriggerCallback)
+				this.audioTriggerCallback(sensor)
+		}
 		
+		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
+		{
+			if(this.buttonTriggerCallback)
+				this.buttonTriggerCallback(sensor)
+		}
+
 		return sensor
 	}
 
