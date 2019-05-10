@@ -34,12 +34,6 @@ export default class Bluetooth {
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		if(!this.scanning)
-		{
-			console.log('NO MORE SCAN PLEASE')
-			return null
-		}
-
 		this.stopScanning()
 		
 		sensor.touch(() => {
