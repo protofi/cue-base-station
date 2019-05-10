@@ -2,6 +2,7 @@ import * as Noble from 'noble'
 
 export enum TRIGGER {
 	AUDIO 	= '4f49445541',
+	BTN 	= '4e4f54545542',
 	BUTTON 	= 'BUTTON'
 }
 export default class Sensor {
@@ -65,6 +66,9 @@ export default class Sensor {
 
 			_this.characteristics = chararacteristics
 			_this.services = services
+
+			// console.log('CHARACTERISTICS', 	_this.characteristics)
+			// console.log('SERVICES', 		_this.services)
 
 			if(_this.connectCallback)
 				_this.connectCallback()
