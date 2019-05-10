@@ -101,6 +101,8 @@ export default class Sensor {
 		const { serviceData } = this.peripheral.advertisement
 
 		if(serviceData.length < 1) return null
+
+		console.log('SERVICE DATA', serviceData)
 		
 		return serviceData[0].uuid as TRIGGER
 	}
