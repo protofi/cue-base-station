@@ -34,7 +34,9 @@ export default class Bluetooth {
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		this.stopScanning()
+		this.stopScanning(() => {
+			console.log('SCANNING STOPPEDDINNER CALLBACK')
+		})
 		
 		sensor.touch(() => {
 			this.scan()
@@ -72,7 +74,9 @@ export default class Bluetooth {
 
 		this.knownSensors.add(sensor.id)
 
-		this.stopScanning()
+		this.stopScanning(() => {
+			console.log('SCANNING STOPPEDDINNER CALLBACK')
+		})
 
 		sensor.touch(() => {
 			this.scan()
@@ -91,12 +95,10 @@ export default class Bluetooth {
 		Noble.on("discover", 	this.onDiscover.bind(this))
 
         Noble.on("scanStart", () => {
-			this.scanning = true
             console.log('BLUETOOTH =============================> SCANNING STARTED')
         })
 
         Noble.on("scanStop", () => {
-			this.scanning = false
             console.log('BLUETOOTH =============================> SCANNING STOPPED')
         })
     }
@@ -111,6 +113,7 @@ export default class Bluetooth {
 	private onDiscover(peripheral: Noble.Peripheral)
 	{
 		if(!peripheral) return
+		if(!this.scanning) return
 
 		const sensor: Sensor = this.scannerStrategy(peripheral)
 		if(!sensor) return
@@ -136,10 +139,10 @@ export default class Bluetooth {
 	/**
 	 * stopScanning
 	 */
-	private stopScanning()
+	private stopScanning(callback?: () => void)
 	{
 		this.scanning = false
-		Noble.stopScanning()
+		Noble.stopScanning(callback)
 	}
 	/**
 	 * scan
