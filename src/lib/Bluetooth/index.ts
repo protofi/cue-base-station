@@ -87,8 +87,6 @@ export default class Bluetooth {
 
 	constructor() {
 		
-		this.knownSensors.add('00a050cf66d7')
-
 		Noble.on("stateChange", this.onStateChange.bind(this))
 		Noble.on("discover", 	this.onDiscover.bind(this))
 
@@ -150,7 +148,7 @@ export default class Bluetooth {
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
 		this.deviceFoundCallback = (deviceFoundCallback) ? deviceFoundCallback : null
 
-		console.log('SCAN INITIALIZED', 'strategy:', this.scannerStrategy.name, 'callack:', !(!deviceFoundCallback))
+		console.log('SCAN INITIALIZED', 'strategy:', this.scannerStrategy.toString(), 'callack:', !(!deviceFoundCallback))
 
 		if(this.scanning)
 		{
