@@ -94,12 +94,12 @@ export default class Bluetooth {
 		{
 			console.log('NOT TRIGGERS BY BUTTON')
 			console.log('TRIGGERED BY: ', sensor.getTrigger())
-			return null
+			// return null
 		}
 
-		console.log('TRIGGERS BY BUTTON')
+		// console.log('TRIGGERS BY BUTTON')
 		
-		this.knownSensors.add(sensor.id)
+		// this.knownSensors.add(sensor.id)
 
 		this.stopScanning()
 
