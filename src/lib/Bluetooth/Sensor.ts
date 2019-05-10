@@ -1,9 +1,10 @@
 import * as Noble from 'noble'
 
 export enum TRIGGER {
-	AUDIO 	= '4f49445541',
+	AUD 	= '4f49445541',
 	BTN 	= '4e4f54545542',
-	BUTTON 	= 'BUTTON'
+	BUTTON 	= 'BUTTON',
+	AUDIO 	= 'AUDIO'
 }
 export default class Sensor {
 	
@@ -84,6 +85,7 @@ export default class Sensor {
     {
 		console.log('SENSOR IS', this.peripheral.state)
 	
+		console.log('DISCONNECT CALLBACK:', !(!this.disconnectCallback))
 		if(this.disconnectCallback)
 			this.disconnectCallback()
 	}
