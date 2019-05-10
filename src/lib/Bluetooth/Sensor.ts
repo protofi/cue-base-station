@@ -66,8 +66,8 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			console.log('CHARACTERISTICS', 	_this.characteristics)
-			console.log('SERVICES', 		_this.characteristics)
+			// console.log('CHARACTERISTICS', 	_this.characteristics)
+			// console.log('SERVICES', 		_this.services)
 
 			if(_this.connectCallback)
 				_this.connectCallback()
@@ -102,7 +102,7 @@ export default class Sensor {
 
 		if(serviceData.length < 1) return null
 
-		console.log('SERVICE DATA', JSON.stringify(serviceData[0].data))
+		console.log('SERVICE DATA', JSON.stringify(serviceData[0].data.values()))
 		
 		return serviceData[0].uuid as TRIGGER
 	}
