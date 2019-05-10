@@ -88,12 +88,16 @@ export default class Sensor {
 	 */
 	public wasTriggerBy(trigger: TRIGGER): boolean
 	{
+		const t = this.getTrigger()
+		return (trigger == t)
+	}
+
+	public getTrigger(): TRIGGER
+	{
 		const { serviceData } = this.peripheral.advertisement
 
-		if(serviceData.length < 1) return false
+		if(serviceData.length < 1) return null
 		
-		const t = serviceData[0].uuid
-
-		return (trigger == t)
+		return serviceData[0].uuid as TRIGGER
 	}
 }
