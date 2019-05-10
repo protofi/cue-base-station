@@ -43,37 +43,12 @@ export default class Bluetooth {
 		})
 
 		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
-		{
-			console.log('AUDIO TRIGGER')
-			
-			if(this.audioTriggerCallback)
-			{
-				console.log('AUDIO CALLBACK CALLED')
-				this.audioTriggerCallback(sensor)
-			}
-			else
-			{
-				console.log('BUTTON CALLBACK NOT CALLED')
-			}
-		}
-		else if(sensor.wasTriggerBy(TRIGGER.BUTTON))
-		{
-			console.log('BUTTON TRIGGER')
+			this.audioTriggerCallback(sensor)
 
-			if(this.buttonTriggerCallback)
-			{
-				console.log('BUTTON CALLBACK CALLED')
-				this.buttonTriggerCallback(sensor)
-			}
-			else
-			{
-				console.log('BUTTON CALLBACK NOT CALLED')
-			}
-		}
-		else
-		{
-			console.log('UNKNOWN TRIGGER:', sensor.getTrigger())
-		}
+		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
+			this.buttonTriggerCallback(sensor)
+		
+		console.log('TRIGGER:', sensor.getTrigger())
 		
 		return sensor
 	}
@@ -90,13 +65,10 @@ export default class Bluetooth {
 
 		console.log('UNKNOWN SENSOR FOUND:', sensor.id)
 
-		console.log('SERVICE DATA', sensor.getServiceData())
-		console.log('SERVICE DATA [0]', sensor.getServiceData()[0].data.toString('utf8'))
-
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
 			console.log('NOT TRIGGERS BY BUTTON')
-			console.log('TRIGGERED BY: ', `|${sensor.getTrigger()}|`)
+			console.log('TRIGGERED BY: ', sensor.getTrigger())
 			return null
 		}
 

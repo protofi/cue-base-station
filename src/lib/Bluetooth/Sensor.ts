@@ -29,13 +29,7 @@ export default class Sensor {
 	public touch(callback: () => void)
 	{
 		console.log('TOUCHING SENSOR')
-
-		this.connect(() => {
-
-			this.disconnect(() => {
-				console.log('INNER DISCONNECT CALLBACK', !(!callback))
-			})
-		}, callback)
+		this.connect(this.disconnect, callback)
 	}
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
