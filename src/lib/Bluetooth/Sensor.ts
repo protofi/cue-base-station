@@ -26,6 +26,7 @@ export default class Sensor {
 	 */
 	public touch(callback: () => void)
 	{
+		console.log('TOUCHING SENSOR')
 		this.connect(() => {
 
 			this.disconnect(() => {
@@ -47,27 +48,26 @@ export default class Sensor {
 
 	private onConnect()
 	{
-		console.log('SENSOR STATE', this.peripheral.state)
-
+		console.log('SENSOR IS', this.peripheral.state)
 		console.log('RETRIEVING SENSOR DATA')
 
 		const _this = this
 
-		// this.peripheral.discoverAllServicesAndCharacteristics(
-		// (
-		// 	error: string,
-		// 	services: Noble.Service[],
-		// 	chararacteristics: Noble.Characteristic[]
-		// ) => {
+		this.peripheral.discoverAllServicesAndCharacteristics(
+		(
+			error: string,
+			services: Noble.Service[],
+			chararacteristics: Noble.Characteristic[]
+		) => {
 
-		// 	if(error) console.log("There was an error discovering services: ", error)
+			if(error) console.log("There was an error discovering services: ", error)
 
-		// 	_this.characteristics = chararacteristics
-		// 	_this.services = services
+			_this.characteristics = chararacteristics
+			_this.services = services
 
 			if(_this.connectCallback)
 				_this.connectCallback()
-		// })
+		})
 	}
 
     public disconnect(cb?: () => void)
@@ -77,7 +77,7 @@ export default class Sensor {
 
     private onDisconnect()
     {
-		console.log('SENSOR STATE', this.peripheral.state)
+		console.log('SENSOR IS', this.peripheral.state)
 	
 		if(this.disconnectCallback)
 			this.disconnectCallback()
