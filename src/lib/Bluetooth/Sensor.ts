@@ -2,7 +2,7 @@ import * as Noble from 'noble'
 
 export enum TRIGGER {
 	AUDIO 	= '4f49445541',
-	BUTTON 	= '4e4f54545542'
+	BUTTON 	= 'BUTTON'
 }
 export default class Sensor {
 	
@@ -87,14 +87,9 @@ export default class Sensor {
 			this.disconnectCallback()
 	}
 
-	public getServiceData()
+	public getServiceData(): { uuid: string; data: Buffer; }[]
 	{
 		const { serviceData } = this.peripheral.advertisement
-
-		console.log('SERVICE DATA', serviceData[0].data)
-		console.log('SERVICE DATA 2', serviceData[0].data.toString('utf8'))
-
-
 
 		return serviceData
 	}
@@ -110,11 +105,10 @@ export default class Sensor {
 
 	public getTrigger(): TRIGGER
 	{
-		//USE getServiceData
-		const { serviceData } = this.peripheral.advertisement
+		const serviceData = this.getServiceData()
 
 		if(serviceData.length < 1) return null
 
-		return serviceData[0].uuid as TRIGGER
+		return serviceData[0].data.toString('utf8') as TRIGGER
 	}
 }
