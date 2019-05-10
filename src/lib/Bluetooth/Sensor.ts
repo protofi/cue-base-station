@@ -66,9 +66,6 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			// console.log('CHARACTERISTICS', 	_this.characteristics)
-			// console.log('SERVICES', 		_this.services)
-
 			if(_this.connectCallback)
 				_this.connectCallback()
 		})
