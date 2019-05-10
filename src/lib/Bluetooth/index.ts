@@ -32,9 +32,11 @@ export default class Bluetooth {
 
 		const sensor = new Sensor(peripheral)
 
+		console.log('CUE SENSOR FOUND:', sensor.id)
+
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		console.log('KNOWN SENSOR FOUND')
+		console.log('KNOWN')
 
 		this.stopScanning()
 
@@ -67,19 +69,19 @@ export default class Bluetooth {
 
 		const sensor: Sensor = new Sensor(peripheral)
 
+		console.log('CUE SENSOR FOUND:', sensor.id)
+
 		if(this.knownSensors.has(sensor.id)) return null
 
-		console.log('UNKNOWN SENSOR FOUND:', sensor.id)
+		console.log('UNKNOWN')
+
+		console.log('TRIGGER: ', sensor.getTrigger())
 
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
-			console.log('NOT TRIGGERS BY BUTTON')
-			console.log('TRIGGERED BY: ', sensor.getTrigger())
 			return null
 		}
 
-		console.log('TRIGGERS BY BUTTON')
-		
 		this.knownSensors.add(sensor.id)
 
 		this.stopScanning()
