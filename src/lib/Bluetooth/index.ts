@@ -153,10 +153,10 @@ export default class Bluetooth {
 	 */
 	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void)
 	{
-		console.log('SCAN INITIALIZED', 'strategy:', !(!scannerStrategy), 'callack:', !(!deviceFoundCallback))
-
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
 		this.deviceFoundCallback = (deviceFoundCallback) ? deviceFoundCallback : null
+
+		console.log('SCAN INITIALIZED', 'strategy:', this.scannerStrategy.name, 'callack:', !(!deviceFoundCallback))
 
 		if(this.scanning)
 		{
