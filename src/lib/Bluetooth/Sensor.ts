@@ -36,8 +36,8 @@ export default class Sensor {
 
     public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
     {
-		this.peripheral.on("connect",     this.onConnect.bind(this))
-		this.peripheral.on("disconnect",  this.onDisconnect.bind(this))
+		this.peripheral.once("connect",     this.onConnect.bind(this))
+		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
 
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
