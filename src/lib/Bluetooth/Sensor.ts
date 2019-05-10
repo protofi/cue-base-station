@@ -87,6 +87,18 @@ export default class Sensor {
 			this.disconnectCallback()
 	}
 
+	public getServiceData()
+	{
+		const { serviceData } = this.peripheral.advertisement
+
+		console.log('SERVICE DATA', serviceData[0].data)
+		console.log('SERVICE DATA 2', serviceData[0].data.toString('utf8'))
+
+
+
+		return serviceData
+	}
+
 	/**
 	 * wasTriggerBy
 	 */
@@ -98,12 +110,10 @@ export default class Sensor {
 
 	public getTrigger(): TRIGGER
 	{
+		//USE getServiceData
 		const { serviceData } = this.peripheral.advertisement
 
 		if(serviceData.length < 1) return null
-
-		console.log('SERVICE DATA', JSON.stringify(serviceData[0].data.values()))
-		console.log('SERVICE DATA 2', serviceData[0].data)
 
 		return serviceData[0].uuid as TRIGGER
 	}
