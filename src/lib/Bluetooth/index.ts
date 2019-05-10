@@ -161,12 +161,12 @@ export default class Bluetooth {
 
 		if(this.scannerStrategy == this.defaultScannerStrategy)
 		{
-			console.log('strategy: default')
-			console.log('callack:', !(!deviceFoundCallback))
+			console.log('|===> STRATEGY: default')
+			console.log('|===> CALLBACK:', !(!deviceFoundCallback))
 		}
 		else if(this.scannerStrategy == this.pairingScannerStrategy){
-			console.log('strategy: pairing')
-			console.log('callack:', !(!deviceFoundCallback))
+			console.log('|===> STRATEGY: pairing')
+			console.log('|===> CALLBACK:', !(!deviceFoundCallback))
 		}
 
 		if(this.scanning)
