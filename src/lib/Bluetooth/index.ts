@@ -88,7 +88,7 @@ export default class Bluetooth {
 
 		if(this.knownSensors.has(sensor.id)) return null
 
-		console.log('UNKNOWN SENSOR FOUND')
+		console.log('UNKNOWN SENSOR FOUND:', sensor.id)
 
 		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
