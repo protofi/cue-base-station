@@ -76,8 +76,6 @@ export default class Sensor {
     {
 		console.log('SENSOR IS', this.peripheral.state)
 	
-		console.log('DISCONNECT CALLBACK:', !(!this.disconnectCallback))
-		
 		if(this.disconnectCallback)
 			this.disconnectCallback()
 	}
@@ -105,6 +103,6 @@ export default class Sensor {
 		if(serviceData.length < 1) return null
 
 		// return serviceData[0].uuid as TRIGGER
-		return serviceData[0].data.toString('utf8') as TRIGGER
+		return serviceData[0].data.toString('utf8').trim() as TRIGGER
 	}
 }

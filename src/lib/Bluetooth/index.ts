@@ -190,4 +190,8 @@ export default class Bluetooth {
 		this.audioTriggerCallback = cb
 	}
 
+	public onButton(cb: (sensor: Sensor) => void): void {
+		this.buttonTriggerCallback = cb
+	}
+
 }

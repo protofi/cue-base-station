@@ -111,9 +111,9 @@ export default class BaseStation {
             })
         })
       
-        // this.bluetooth.onPeripheralButton(() => {
-        //     console.log("Button clicked")
-        // });
+        this.bluetooth.onButton(() => {
+            console.log("SENSOR BUTTON WAS PRESSED")
+        });
     }
 
     private errorHandler(error: Error): void
