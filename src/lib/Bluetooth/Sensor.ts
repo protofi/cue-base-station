@@ -103,7 +103,8 @@ export default class Sensor {
 		if(serviceData.length < 1) return null
 
 		console.log('SERVICE DATA', JSON.stringify(serviceData[0].data.values()))
-		
+		console.log('SERVICE DATA 2', serviceData[0].data)
+
 		return serviceData[0].uuid as TRIGGER
 	}
 }
