@@ -104,7 +104,7 @@ export default class Sensor {
 
 		if(serviceData.length < 1) return null
 
-		return serviceData[0].uuid as TRIGGER
-		// return serviceData[0].data.toString('utf8') as TRIGGER
+		// return serviceData[0].uuid as TRIGGER
+		return serviceData[0].data.toString('utf8') as TRIGGER
 	}
 }
