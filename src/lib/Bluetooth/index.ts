@@ -34,9 +34,13 @@ export default class Bluetooth {
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
-		this.stopScanning(() => {
-			console.log('SCANNING STOPPEDDINNER CALLBACK')
-		})
+		if(!this.scanning)
+		{
+			console.log('NO MORE SCAN PLEASE')
+			return null
+		}
+
+		this.stopScanning()
 		
 		sensor.touch(() => {
 			this.scan()
@@ -74,9 +78,7 @@ export default class Bluetooth {
 
 		this.knownSensors.add(sensor.id)
 
-		this.stopScanning(() => {
-			console.log('SCANNING STOPPEDDINNER CALLBACK')
-		})
+		this.stopScanning()
 
 		sensor.touch(() => {
 			this.scan()
