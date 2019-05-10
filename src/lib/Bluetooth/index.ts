@@ -42,10 +42,10 @@ export default class Bluetooth {
 			this.scan()
 		})
 
-		if(!(sensor.wasTriggerBy(TRIGGER.AUDIO) || sensor.wasTriggerBy(TRIGGER.AUD)))
+		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
 			this.audioTriggerCallback(sensor)
 
-		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON) || sensor.wasTriggerBy(TRIGGER.BTN)))
+		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
 			this.buttonTriggerCallback(sensor)
 		
 		console.log('TRIGGER:', sensor.getTrigger())
@@ -65,7 +65,7 @@ export default class Bluetooth {
 
 		console.log('UNKNOWN SENSOR FOUND:', sensor.id)
 
-		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON) || sensor.wasTriggerBy(TRIGGER.BTN)))
+		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
 		{
 			console.log('NOT TRIGGERS BY BUTTON')
 			console.log('TRIGGERED BY: ', sensor.getTrigger())
