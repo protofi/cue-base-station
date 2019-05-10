@@ -33,6 +33,7 @@ export default class Sensor {
 		this.connect(() => {
 
 			this.disconnect(() => {
+				console.log('INNER DISCONNECT CALLBACK', !(!callback))
 				callback()
 			})
 		})
@@ -68,9 +69,6 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
-			// console.log('CHARACTERISTICS', 	_this.characteristics)
-			// console.log('SERVICES', 		_this.services)
-
 			if(_this.connectCallback)
 				_this.connectCallback()
 		})
@@ -86,6 +84,7 @@ export default class Sensor {
 		console.log('SENSOR IS', this.peripheral.state)
 	
 		console.log('DISCONNECT CALLBACK:', !(!this.disconnectCallback))
+		
 		if(this.disconnectCallback)
 			this.disconnectCallback()
 	}
