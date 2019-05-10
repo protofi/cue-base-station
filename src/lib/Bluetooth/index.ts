@@ -34,8 +34,10 @@ export default class Bluetooth {
 
 		if(!this.knownSensors.has(sensor.id)) return null
 
+		console.log('KNOWN SENSOR FOUND')
+
 		this.stopScanning()
-		
+
 		sensor.touch(() => {
 			this.scan()
 		})
@@ -67,9 +69,16 @@ export default class Bluetooth {
 
 		const sensor: Sensor = new Sensor(peripheral)
 
-		if(this.knownSensors.has(sensor.id)) 	 return null
-		if(!sensor.wasTriggerBy(TRIGGER.BUTTON)) return null
+		if(this.knownSensors.has(sensor.id)) return null
 
+		console.log('UNKNOWN SENSOR FOUND')
+
+		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
+		{
+			console.log('NOT TRIGGERS BY BUTTON')
+			return null
+		}
+		
 		this.knownSensors.add(sensor.id)
 
 		this.stopScanning()
