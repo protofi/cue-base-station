@@ -47,7 +47,14 @@ export default class Bluetooth {
 			console.log('AUDIO TRIGGER')
 			
 			if(this.audioTriggerCallback)
+			{
+				console.log('AUDIO CALLBACK CALLED')
 				this.audioTriggerCallback(sensor)
+			}
+			else
+			{
+				console.log('BUTTON CALLBACK NOT CALLED')
+			}
 		}
 	
 		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
@@ -55,7 +62,14 @@ export default class Bluetooth {
 			console.log('BUTTON TRIGGER')
 
 			if(this.buttonTriggerCallback)
+			{
+				console.log('BUTTON CALLBACK CALLED')
 				this.buttonTriggerCallback(sensor)
+			}
+			else
+			{
+				console.log('BUTTON CALLBACK NOT CALLED')
+			}
 		}
 		
 		return sensor
@@ -77,6 +91,10 @@ export default class Bluetooth {
 		{
 			console.log('NOT TRIGGERS BY BUTTON')
 			return null
+		}
+		else
+		{
+			console.log('TRIGGERS BY BUTTON')
 		}
 		
 		this.knownSensors.add(sensor.id)
