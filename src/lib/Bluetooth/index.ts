@@ -93,6 +93,8 @@ export default class Bluetooth {
 
 	constructor() {
 		
+		this.knownSensors.add('00a050cf66d7')
+
 		Noble.on("stateChange", this.onStateChange.bind(this))
 		Noble.on("discover", 	this.onDiscover.bind(this))
 
