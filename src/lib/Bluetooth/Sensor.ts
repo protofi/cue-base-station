@@ -27,6 +27,7 @@ export default class Sensor {
 	public touch(callback: () => void)
 	{
 		console.log('TOUCHING SENSOR')
+
 		this.connect(() => {
 
 			this.disconnect(() => {
@@ -65,6 +66,9 @@ export default class Sensor {
 			_this.characteristics = chararacteristics
 			_this.services = services
 
+			console.log('CHARACTERISTICS', 	_this.characteristics)
+			console.log('SERVICES', 		_this.characteristics)
+
 			if(_this.connectCallback)
 				_this.connectCallback()
 		})
@@ -94,17 +98,10 @@ export default class Sensor {
 
 	public getTrigger(): TRIGGER
 	{
-		
 		const { serviceData } = this.peripheral.advertisement
 
-		const serviceDataJSONArray = JSON.parse(JSON.stringify(serviceData))
-	
-		// console.log("Service data: ", serviceDataJSONArray);
-
 		if(serviceData.length < 1) return null
-
-		const trigger = serviceDataJSONArray[0].uuid
 		
-		return trigger as TRIGGER
+		return serviceData[0].uuid as TRIGGER
 	}
 }
