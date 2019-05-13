@@ -44,7 +44,7 @@ export default class Bluetooth {
 			this.scan()
 		})
 
-		console.log('TRIGGER:', sensor.getTrigger())
+		console.log('TRIGGER:', (sensor.getTrigger()) ? sensor.getTrigger() : 'NO TRIGGER FOUND')
 
 		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
 		{
