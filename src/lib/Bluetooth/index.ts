@@ -7,7 +7,7 @@ enum STATE {
 }
 
 export interface ScannerStrategy {
-	(peripheral: Noble.Peripheral) : Sensor
+	(peripheral: Noble.Peripheral) : Promise<Sensor>
 }
 
 export default class Bluetooth {
@@ -24,7 +24,7 @@ export default class Bluetooth {
 	private audioTriggerCallback: 	(sensor: Sensor) => void = null
 	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
 
-	private defaultScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
+	private defaultScannerStrategy: ScannerStrategy = async (peripheral: Noble.Peripheral) => {
 
 		const { localName } = peripheral.advertisement
 
@@ -47,7 +47,7 @@ export default class Bluetooth {
 			return null
 		}
 
-		this.stopScanning()
+		await this.stopScanning()
 
 		sensor.touch(() => {
 			this.scan()
@@ -73,7 +73,7 @@ export default class Bluetooth {
 		return sensor
 	}
 
-	public pairingScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
+	public pairingScannerStrategy: ScannerStrategy = async (peripheral: Noble.Peripheral) => {
 
 		const { localName } = peripheral.advertisement
 
@@ -104,7 +104,7 @@ export default class Bluetooth {
 
 		this.knownSensors.add(sensor.getId())
 
-		this.stopScanning()
+		await this.stopScanning()
 
 		sensor.touch(() => {
 			this.scan()
@@ -116,7 +116,7 @@ export default class Bluetooth {
 		return sensor
 	}
 
-	public calibrationScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
+	public calibrationScannerStrategy: ScannerStrategy = async (peripheral: Noble.Peripheral) => {
 
 		const { localName } = peripheral.advertisement
 
@@ -130,7 +130,7 @@ export default class Bluetooth {
 			return null
 		}
 
-		this.stopScanning()
+		await this.stopScanning()
 
 		sensor.connect(() => {
 			console.log('CHARACTERISTICS', sensor.getCharacteristics())
@@ -167,12 +167,13 @@ export default class Bluetooth {
 		if(action) action()
 	}
 
-	private onDiscover(peripheral: Noble.Peripheral)
+	private async onDiscover(peripheral: Noble.Peripheral): Promise<void>
 	{
 		if(!peripheral) return
 		if(!this.scanning) return
 
-		const sensor: Sensor = this.scannerStrategy(peripheral)
+		const sensor: Sensor = await this.scannerStrategy(peripheral)
+
 		if(!sensor) return
 
 		if(this.deviceFoundCallback)
@@ -196,10 +197,12 @@ export default class Bluetooth {
 	/**
 	 * stopScanning
 	 */
-	public stopScanning(callback?: () => void)
+	public stopScanning(): Promise<void>
 	{
 		this.scanning = false
-		Noble.stopScanning(callback)
+		return new Promise((resolve, reject) => {
+			Noble.stopScanning(resolve)
+		})
 	}
 	/**
 	 * scan
@@ -256,6 +259,15 @@ export default class Bluetooth {
 	 */
 	public onHeartbeat(cb: (sensor: Sensor) => void): void {
 		this.heartbeatCallback = cb
+	}
+
+	/**
+	 * syncSensors
+	 */
+	public syncSensors(sensors: Array<string>) {
+		sensors.forEach(sensorId => {
+			this.knownSensors.add(sensorId)
+		})
 	}
 
 }

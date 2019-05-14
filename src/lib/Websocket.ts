@@ -95,7 +95,7 @@ export default class Websocket {
         })
     }
 
-    public on(action: CueWebsocketActions, cb: () => void)
+    public on(action: CueWebsocketActions, cb: (paylod: {}) => void)
     {
         this.actions.set(action, cb)
     }
@@ -130,15 +130,16 @@ export default class Websocket {
 }
 
 export enum CueWebsocketActions {
-    DISCONNECT_ATTACHED_PERIPHERAL = 'disconnect',
-    ACTIVATE_CALIBATION_MODE = 'calibration',
-    ACTIVATE_LISTENING_MODE = 'listen',
-    ACTIVATE_PAIRING_MODE = 'pairing',
-    FORGET_SENSORS = 'forget',
-    STOP = 'stop'
+    DISCONNECT_ATTACHED_PERIPHERAL  = 'disconnect',
+    ACTIVATE_CALIBATION_MODE        = 'calibration',
+    ACTIVATE_LISTENING_MODE         = 'listen',
+    ACTIVATE_PAIRING_MODE           = 'pairing',
+    SYNC_SENSORS                    = 'sync-sensors',
+    FORGET_SENSORS                  = 'forget',
+    STOP                            = 'stop',
 }
 
 export interface CueWebsocketMessage {
     action  : CueWebsocketActions
-    payload : any
+    payload : {}
 }

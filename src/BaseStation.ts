@@ -3,8 +3,6 @@ import Websocket, { CueWebsocketActions } from "./lib/Websocket";
 import Bluetooth from "./lib/Bluetooth";
 import Sensor from "./lib/Bluetooth/Sensor";
 
-const sensorIdMock = '0c087570-4990-11e9-ac8f-454c002d928c'
-
 enum TIMER {
     PAIRING = 'pairing'
 }
@@ -76,7 +74,9 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(CueWebsocketActions.STOP, this.bluetooth.stopScanning)
+        this.websocket.on(CueWebsocketActions.STOP, async () => {
+            await this.bluetooth.stopScanning()
+        })
 
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
             
@@ -90,6 +90,11 @@ export default class BaseStation {
             //     id              : sensorIdMock,
             //     db_threshold    : Math.random()*10,
             // })
+        })
+
+        this.websocket.on(CueWebsocketActions.SYNC_SENSORS, (payload: any) => {
+            console.log('SYNC SENSORS', payload)
+            this.bluetooth.syncSensors(payload.sensors)
         })
 
         this.websocket.on(CueWebsocketActions.ACTIVATE_LISTENING_MODE, () => {
