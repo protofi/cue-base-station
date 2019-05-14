@@ -6,14 +6,26 @@ export enum TRIGGER {
 	BUTTON 	= 'BUTTON',
 	AUDIO 	= 'AUDIO'
 }
+
+export enum STATE {
+	ERROR 			= 'error',
+	CONNECTED 		= 'connected',
+	CONNECTING 		= 'connecting',
+	DISCONNECTED 	= 'disconnected',
+	DISCONNECTING 	= 'disconnecting',
+}
 export default class Sensor {
 	
-    public readonly id: string
+    private id: string
+	private rssi: number
+	
+	private state: STATE
 
     private peripheral: Noble.Peripheral
     private characteristics: Array<Noble.Characteristic>
 	private services: Array<Noble.Service>
-	
+	private stateChecker: NodeJS.Timeout
+
 	private disconnectCallback: () => void
 	private connectCallback: () => void
 
@@ -21,6 +33,7 @@ export default class Sensor {
     {
         this.peripheral = peripheral
         this.id = peripheral.id
+		this.rssi = peripheral.rssi
 	}
 	
 	/**
@@ -40,7 +53,9 @@ export default class Sensor {
 		this.connectCallback 	= (connectCallback) ? connectCallback : null
 		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
-		this.peripheral.connect(error => console.log)
+		this.peripheral.connect((error) => {
+			if(error) console.log('SENSOR CONNECT ERROR', error)
+		})
 	}
 
 	private onConnect()
@@ -50,6 +65,24 @@ export default class Sensor {
 
 		const _this = this
 
+		this.peripheral.updateRssi((error: string, rssi: number) => {
+			if(error) console.log(error)
+			this.rssi = rssi
+		})
+
+		this.stateChecker = setInterval(() => {
+			if(this.state != this.peripheral.state)
+			{
+				console.log('SENSOR STATE CHANGED', `(${this.peripheral.state})`)
+				this.state = this.peripheral.state as STATE
+			}
+
+			if(this.peripheral.state == STATE.DISCONNECTED)
+			{
+				this.onDisconnect()
+			}
+		}, 10)
+		
 		this.peripheral.discoverAllServicesAndCharacteristics(
 		(
 			error: string,
@@ -70,12 +103,15 @@ export default class Sensor {
     public disconnect(cb?: () => void)
     {
 		this.peripheral.disconnect(cb)
-    }
+		this.peripheral.removeAllListeners()
+	}
 
     private onDisconnect()
     {
 		console.log('SENSOR IS', this.peripheral.state)
-	
+
+		clearInterval(this.stateChecker)
+		
 		if(this.disconnectCallback)
 			this.disconnectCallback()
 	}
@@ -92,8 +128,7 @@ export default class Sensor {
 	 */
 	public wasTriggerBy(trigger: TRIGGER): boolean
 	{
-		const t = this.getTrigger()
-		return (trigger == t)
+		return (trigger == this.getTrigger())
 	}
 
 	public getTrigger(): TRIGGER
@@ -102,7 +137,25 @@ export default class Sensor {
 
 		if(serviceData.length < 1) return null
 
-		// return serviceData[0].uuid as TRIGGER
+		if(Object.values(TRIGGER).includes(serviceData[0].uuid.trim())) //LEGACY. SHOULD BE REMOVED FOR PRODUCTION
+			return serviceData[0].uuid.trim() as TRIGGER
+
 		return serviceData[0].data.toString('utf8').trim() as TRIGGER
+	}
+
+	/**
+	 * getRssi
+	 */
+	public getRssi()
+	{
+		return this.rssi
+	}
+
+	/**
+	 * getId
+	 */
+	public getId()
+	{
+		return this.id	
 	}
 }

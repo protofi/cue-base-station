@@ -1,7 +1,6 @@
 import * as Noble from 'noble'
 import { Advertisement } from 'noble'
 import Sensor, { TRIGGER } from './Sensor';
-import { disconnect } from 'cluster';
 
 enum STATE {
 	POWER_ON = 'poweredOn'
@@ -20,6 +19,7 @@ export default class Bluetooth {
 
 	private connectedSensor: Sensor = null
 
+	private heartbeatCallback: 		(sensor: Sensor) => void = null
 	private deviceFoundCallback: 	(sensor: Sensor) => void = null
 	private audioTriggerCallback: 	(sensor: Sensor) => void = null
 	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
@@ -32,31 +32,38 @@ export default class Bluetooth {
 
 		const sensor = new Sensor(peripheral)
 
-		console.log('CUE SENSOR FOUND:', sensor.id)
+		if(!this.knownSensors.has(sensor.getId()))
+		{
+			console.log('UNKNOWN CUE SENSOR FOUND', `(${sensor.getId()})`, 'KEEPS SCANNING')
+			return null
+		} 
 
-		if(!this.knownSensors.has(sensor.id)) return null
-
-		console.log('KNOWN')
+		console.log('KNOWN CUE SENSOR FOUND', `(${sensor.getId()})`)
 
 		this.stopScanning()
 
 		sensor.touch(() => {
 			this.scan()
+
+			if(this.heartbeatCallback)
+				this.heartbeatCallback(sensor)
 		})
 
-		console.log('TRIGGER:', (sensor.getTrigger()) ? sensor.getTrigger() : 'NO TRIGGER FOUND')
+		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
 
-		if(sensor.wasTriggerBy(TRIGGER.AUDIO))
+		if(sensor.wasTriggerBy(TRIGGER.AUDIO)
+		|| sensor.wasTriggerBy(TRIGGER.AUD))
 		{
 			if(this.audioTriggerCallback)
 				this.audioTriggerCallback(sensor)
 		}
 		
-		if(sensor.wasTriggerBy(TRIGGER.BUTTON))
-		{
-			if(this.buttonTriggerCallback)
-				this.buttonTriggerCallback(sensor)
-		}
+		// if(sensor.wasTriggerBy(TRIGGER.BUTTON)
+		// || sensor.wasTriggerBy(TRIGGER.BTN))
+		// {
+		// 	if(this.buttonTriggerCallback)
+		// 		this.buttonTriggerCallback(sensor)
+		// }
 
 		return sensor
 	}
@@ -69,25 +76,31 @@ export default class Bluetooth {
 
 		const sensor: Sensor = new Sensor(peripheral)
 
-		console.log('CUE SENSOR FOUND:', sensor.id)
+		if(this.knownSensors.has(sensor.getId()))
+		{
+			console.log('KNOWN CUE SENSOR FOUND', `(${sensor.getId()})`, 'KEEPS SCANNING')
+			return null
+		} 
 
-		if(this.knownSensors.has(sensor.id)) return null
+		console.log('UNKNOWN CUE SENSOR FOUND', `(${sensor.getId()})`)
 
-		console.log('UNKNOWN')
-
-		console.log('TRIGGER: ', sensor.getTrigger())
-
-		if(!sensor.wasTriggerBy(TRIGGER.BUTTON))
+		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : ''))
+	
+		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON)
+		  || sensor.wasTriggerBy(TRIGGER.BTN)))
 		{
 			return null
 		}
 
-		this.knownSensors.add(sensor.id)
+		this.knownSensors.add(sensor.getId())
 
 		this.stopScanning()
 
 		sensor.touch(() => {
 			this.scan()
+
+			if(this.heartbeatCallback)
+				this.heartbeatCallback(sensor)
 		})
 		
 		return sensor
@@ -181,6 +194,14 @@ export default class Bluetooth {
 		Noble.startScanning([], true) // any service UUID, duplicates allowed
 		this.scanning = true
 	}
+
+	/**
+	 * forgetSensors
+	 */
+	public forgetSensors()
+	{
+		this.knownSensors.clear()
+	}
 	
 	public poweredOn(cb: () => void): any {
         this.stateChangeActions.set(STATE.POWER_ON, cb)
@@ -192,6 +213,13 @@ export default class Bluetooth {
 
 	public onButton(cb: (sensor: Sensor) => void): void {
 		this.buttonTriggerCallback = cb
+	}
+
+	/**
+	 * onHeartbeat
+	 */
+	public onHeartbeat(cb: (sensor: Sensor) => void): void {
+		this.heartbeatCallback = cb
 	}
 
 }

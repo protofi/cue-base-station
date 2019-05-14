@@ -8,7 +8,7 @@
     "start": "tsc -p src && bash start.sh",
     "build": "tsc -p src",
     "clear": "bash clear.sh && rmdir data /S /Q",
-    "serve": "balena push 192.168.1.159 --force",
+    "serve": "balena push",
     "deploy": "git push balena master",
     "deploy:from": "git push balena",
     "test": "mocha -r ts-node/register test/**/*.test.ts --exit --timeout 5000 || true",

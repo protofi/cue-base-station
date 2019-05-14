@@ -50,12 +50,6 @@ export default class BaseStation {
                     base_station_address    : address.address
                 })
             })
-            
-            // this.pubSub.publish(Topics.HEARTBEAT, {
-            //     id                      : "0c087570-4990-11e9-ac8f-454c002d928c",
-            //     signal_strength         : Math.random()*10,
-            //     battery_level           : Math.random()*100,
-            // })
         })
 
         this.bluetooth.poweredOn(() => {
@@ -70,7 +64,7 @@ export default class BaseStation {
             console.log("PAIRING MODE activated")
 
             this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (sensor: Sensor) => {
-                const sensorId = sensor.id
+                const sensorId = sensor.getId()
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     id : sensorId
@@ -86,14 +80,23 @@ export default class BaseStation {
             
             console.log("CALIBRATIONS MODE activated")
             
-            this.pubSub.publish(Topics.CALIBRATION, {
-                id              : sensorIdMock,
-                db_threshold    : Math.random()*10,
-            })
+            // this.pubSub.publish(Topics.CALIBRATION, {
+            //     id              : sensorIdMock,
+            //     db_threshold    : Math.random()*10,
+            // })
+        })
+
+        this.websocket.on(CueWebsocketActions.ACTIVATE_LISTENING_MODE, () => {
+            this.bluetooth.scan()
         })
 
         this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
             this.bluetooth.disconnectPeripheral()
+        })
+
+
+        this.websocket.on(CueWebsocketActions.FORGET_SENSORS, () => {
+            this.bluetooth.forgetSensors()
         })
 
         this.websocket.onError(this.errorHandler)
@@ -107,7 +110,15 @@ export default class BaseStation {
         this.bluetooth.onAlert((sensor: Sensor) => {
 
             this.pubSub.publish(Topics.NOTIFICATION, {
-                id : sensor.id
+                id : sensor.getId()
+            })
+        })
+
+        this.bluetooth.onHeartbeat((sensor: Sensor) => {
+            this.pubSub.publish(Topics.HEARTBEAT, {
+                id              : sensor.getId(),
+                signal_strength : sensor.getRssi(),
+                battery_level   : Math.random()*100,
             })
         })
       
