@@ -71,15 +71,21 @@ export default class BaseStation {
                 })
             })
 
-            // this.startTimer(TIMER.PAIRING, () => {
-            //     this.bluetooth.scan()
-            // }, 30)
+            this.startTimer(TIMER.PAIRING, () => {
+                this.bluetooth.scan()
+            }, 30)
         })
         
+        this.websocket.on(CueWebsocketActions.STOP, this.bluetooth.stopScanning)
+
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
             
             console.log("CALIBRATIONS MODE activated")
             
+            this.bluetooth.scan(this.bluetooth.calibrationScannerStrategy, (sensor: Sensor) => {
+
+            })
+
             // this.pubSub.publish(Topics.CALIBRATION, {
             //     id              : sensorIdMock,
             //     db_threshold    : Math.random()*10,

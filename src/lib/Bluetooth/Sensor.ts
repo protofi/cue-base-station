@@ -60,8 +60,6 @@ export default class Sensor {
 
 	private onConnect()
 	{
-		console.log('SENSOR IS', this.peripheral.state)
-		console.log('RETRIEVING SENSOR DATA')
 
 		const _this = this
 
@@ -100,16 +98,14 @@ export default class Sensor {
 		})
 	}
 
-    public disconnect(cb?: () => void)
+    public disconnect()
     {
-		this.peripheral.disconnect(cb)
+		this.peripheral.disconnect()
 		this.peripheral.removeAllListeners()
 	}
 
     private onDisconnect()
     {
-		console.log('SENSOR IS', this.peripheral.state)
-
 		clearInterval(this.stateChecker)
 		
 		if(this.disconnectCallback)
@@ -131,16 +127,34 @@ export default class Sensor {
 		return (trigger == this.getTrigger())
 	}
 
-	public getTrigger(): TRIGGER
+	public getTrigger(): string
 	{
 		const serviceData = this.getServiceData()
 
 		if(serviceData.length < 1) return null
 
-		if(Object.values(TRIGGER).includes(serviceData[0].uuid.trim())) //LEGACY. SHOULD BE REMOVED FOR PRODUCTION
-			return serviceData[0].uuid.trim() as TRIGGER
+		const trigger = serviceData[0].uuid.trim() //LEGACY. SHOULD BE REMOVED FOR PRODUCTION
+
+		if(Object.values(TRIGGER).includes(trigger)) //LEGACY. SHOULD BE REMOVED FOR PRODUCTION
+			return trigger
 
 		return serviceData[0].data.toString('utf8').trim() as TRIGGER
+	}
+
+	/**
+	 * getCharacteristics
+	 */
+	public getCharacteristics(): Array<Noble.Characteristic>
+	{
+		return this.characteristics	
+	}
+
+	/**
+	 * getServices
+	 */
+	public getServices(): Array<Noble.Service>
+	{
+		return this.services
 	}
 
 	/**

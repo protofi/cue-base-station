@@ -130,11 +130,12 @@ export default class Websocket {
 }
 
 export enum CueWebsocketActions {
-    ACTIVATE_PAIRING_MODE = 'pairing',
+    DISCONNECT_ATTACHED_PERIPHERAL = 'disconnect',
     ACTIVATE_CALIBATION_MODE = 'calibration',
     ACTIVATE_LISTENING_MODE = 'listen',
-    DISCONNECT_ATTACHED_PERIPHERAL = 'disconnect',
+    ACTIVATE_PAIRING_MODE = 'pairing',
     FORGET_SENSORS = 'forget',
+    STOP = 'stop'
 }
 
 export interface CueWebsocketMessage {

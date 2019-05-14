@@ -40,6 +40,13 @@ export default class Bluetooth {
 
 		console.log('KNOWN CUE SENSOR FOUND', `(${sensor.getId()})`)
 
+		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
+
+		if((!Object.values(TRIGGER).includes(sensor.getTrigger())))
+		{
+			return null
+		}
+
 		this.stopScanning()
 
 		sensor.touch(() => {
@@ -48,8 +55,6 @@ export default class Bluetooth {
 			if(this.heartbeatCallback)
 				this.heartbeatCallback(sensor)
 		})
-
-		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
 
 		if(sensor.wasTriggerBy(TRIGGER.AUDIO)
 		|| sensor.wasTriggerBy(TRIGGER.AUD))
@@ -84,8 +89,13 @@ export default class Bluetooth {
 
 		console.log('UNKNOWN CUE SENSOR FOUND', `(${sensor.getId()})`)
 
-		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : ''))
-	
+		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
+
+		if((!Object.values(TRIGGER).includes(sensor.getTrigger())))
+		{
+			return null
+		}
+
 		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON)
 		  || sensor.wasTriggerBy(TRIGGER.BTN)))
 		{
@@ -101,6 +111,32 @@ export default class Bluetooth {
 
 			if(this.heartbeatCallback)
 				this.heartbeatCallback(sensor)
+		})
+		
+		return sensor
+	}
+
+	public calibrationScannerStrategy: ScannerStrategy = (peripheral: Noble.Peripheral) => {
+
+		const { localName } = peripheral.advertisement
+
+		if(localName != this.cueSensorName) return null
+
+		const sensor: Sensor = new Sensor(peripheral)
+
+		if(!this.knownSensors.has(sensor.getId()))
+		{
+			console.log('UNKNOWN CUE SENSOR FOUND', `(${sensor.getId()})`, 'KEEPS SCANNING')
+			return null
+		}
+
+		this.stopScanning()
+
+		sensor.connect(() => {
+			console.log('CHARACTERISTICS', sensor.getCharacteristics())
+			console.log('SERVICES', sensor.getServices())
+
+			sensor.disconnect()
 		})
 		
 		return sensor
@@ -160,7 +196,7 @@ export default class Bluetooth {
 	/**
 	 * stopScanning
 	 */
-	private stopScanning(callback?: () => void)
+	public stopScanning(callback?: () => void)
 	{
 		this.scanning = false
 		Noble.stopScanning(callback)
