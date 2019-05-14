@@ -49,12 +49,18 @@ export default class Bluetooth {
 
 		await this.stopScanning()
 
-		sensor.touch(() => {
-			this.scan()
+		await sensor.connect()
 
-			if(this.heartbeatCallback)
-				this.heartbeatCallback(sensor)
-		})
+		console.log('SENSOR IS CONNECTED BY PROMISE!!!')
+
+		sensor.disconnect()
+
+		// sensor.touch(() => {
+		// 	this.scan()
+
+		// 	if(this.heartbeatCallback)
+		// 		this.heartbeatCallback(sensor)
+		// })
 
 		if(sensor.wasTriggerBy(TRIGGER.AUDIO)
 		|| sensor.wasTriggerBy(TRIGGER.AUD))

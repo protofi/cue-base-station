@@ -29,6 +29,8 @@ export default class Sensor {
 	private disconnectCallback: () => void
 	private connectCallback: () => void
 
+	private connectedPromiseResolution: (value?: void | PromiseLike<void>) => void
+
     constructor(peripheral: Noble.Peripheral)
     {
         this.peripheral = peripheral
@@ -45,22 +47,28 @@ export default class Sensor {
 		this.connect(this.disconnect, callback)
 	}
 
-    public connect(connectCallback?: () => void, disconnectCallback?: () => void): void
+    public async connect(connectCallback?: () => void, disconnectCallback?: () => void): Promise<void>
     {
 		this.peripheral.once("connect",     this.onConnect.bind(this))
 		this.peripheral.once("disconnect",  this.onDisconnect.bind(this))
 
-		this.connectCallback 	= (connectCallback) ? connectCallback : null
-		this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
+		// this.connectCallback 	= (connectCallback) ? connectCallback : null
+		// this.disconnectCallback = (disconnectCallback) ? disconnectCallback : null
 		
-		this.peripheral.connect((error) => {
-			if(error) console.log('SENSOR CONNECT ERROR', error)
+		// this.peripheral.connect((error) => {
+		// 	if(error) console.log('SENSOR CONNECT ERROR', error)
+		// })
+		return new Promise((resolve, reject) => {
+			this.connectedPromiseResolution = resolve
+
+			this.peripheral.connect((error) => {
+				if(error) reject(error)
+			})
 		})
 	}
 
 	private onConnect()
 	{
-
 		const _this = this
 
 		this.peripheral.updateRssi((error: string, rssi: number) => {
@@ -96,6 +104,9 @@ export default class Sensor {
 			if(_this.connectCallback)
 				_this.connectCallback()
 		})
+
+		if(this.connectedPromiseResolution)
+			this.connectedPromiseResolution()
 	}
 
     public disconnect()
