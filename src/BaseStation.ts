@@ -83,13 +83,8 @@ export default class BaseStation {
             console.log("CALIBRATIONS MODE activated")
             
             this.bluetooth.scan(this.bluetooth.calibrationScannerStrategy, (sensor: Sensor) => {
-
+                
             })
-
-            // this.pubSub.publish(Topics.CALIBRATION, {
-            //     id              : sensorIdMock,
-            //     db_threshold    : Math.random()*10,
-            // })
         })
 
         this.websocket.on(CueWebsocketActions.SYNC_SENSORS, (payload: any) => {
@@ -135,7 +130,7 @@ export default class BaseStation {
       
         this.bluetooth.onButton(() => {
             console.log("SENSOR BUTTON WAS PRESSED")
-        });
+        })
     }
 
     private errorHandler(error: Error): void
@@ -165,14 +160,25 @@ export default class BaseStation {
 
 process
 .on('unhandledRejection', (reason, p) => {
-    console.error(reason, 'Unhandled Rejection at Promise', p)
+    console.log('')
+    console.log('**********************************************')
+    console.log('')
+    console.error('Unhandled Rejection of Promise')
+    console.error(reason)
+    console.error(p)
+    console.log('')
+    console.log('**********************************************')
+    console.log('')
+
 })
 .on('uncaughtException', error => {
     console.log('')
     console.log('**********************************************')
+    console.log('')
     console.error('Uncaught Exception thrown')
     console.error(error.message)
     console.error(error)
+    console.log('')
     console.log('**********************************************')
     console.log('')
 })
