@@ -9,6 +9,7 @@ export enum TRIGGER {
 
 export enum CHAR {
 	THRESHOLD_LEVEL = '4b6c4032d9ff4e01a95bc8ef20a1e5e8',
+	MAX_AUDIO_LEVEL	= '7429e850281e4b6287fdcee6980735d2',
 	RSSI_LEVEL 		= '05855503fbbf4fbb85bb41b87804d3c2',
 }
 
@@ -44,8 +45,8 @@ export default class Sensor {
     constructor(peripheral: Noble.Peripheral)
     {
         this.peripheral = peripheral
-        this.id = peripheral.id
-		this.rssi = peripheral.rssi
+        this.id 		= peripheral.id
+		this.rssi 		= peripheral.rssi
 	}
 	
 	public async touch(): Promise<void>
@@ -91,12 +92,67 @@ export default class Sensor {
 		delete this.connectedPromiseResolution
 	}
 
-	public async discoverCharacteristics(): Promise<{services : Noble.Service[], characteristics: Noble.Characteristic[]}>
+	// public async discoverCharacteristics(): Promise<{services : Noble.Service[], characteristics: Noble.Characteristic[]}>
+	// {
+	// 	return new Promise((resolve, reject) => {
+
+	// 		console.log('FETCHING DATA')
+
+	// 		this.peripheral.discoverSomeServicesAndCharacteristics(this.serviceUUIDs, this.characteristicUUIDs, () =>
+	// 		(
+	// 			error: string,
+	// 			services: Noble.Service[],
+	// 			chararacteristics: Noble.Characteristic[]
+	// 		) => {
+	// 			if(error) return reject(error)
+
+	// 			this.characteristics = chararacteristics
+	// 			this.services = services
+
+	// 			resolve({
+	// 				services : services,
+	// 				characteristics : chararacteristics
+	// 			})
+	// 		})
+	// 	})
+	// }
+
+	// public async discoverAllServicesAndCharacteristics(): Promise<void>
+	// {
+	// 	return new Promise((resolve, reject) => {
+
+	// 		console.log('FETCHING DATA')
+
+	// 		this.peripheral.discoverAllServicesAndCharacteristics(
+	// 		(
+	// 			error: string,
+	// 			services: Noble.Service[],
+	// 			chararacteristics: Noble.Characteristic[]
+	// 		) => {
+	// 			if(error) return reject(error)
+
+	// 			this.characteristics = chararacteristics
+	// 			this.services = services
+
+	// 			resolve()
+	// 		})
+	// 	})
+	// }
+
+	// public async getServicesAndCharateristic(serviceUUIDs: Array<string> = [], characteristicUUIDs: Array<string> = []): Promise<Array<Noble.Characteristic>>
+	// {
+	// 	return new Promise((resolve, reject) => {
+	// 		this.peripheral.discoverSomeServicesAndCharacteristics(serviceUUIDs, characteristicUUIDs, (error: string, services: Array<Noble.Service>, characteristic: Array<Noble.Characteristic>) => {
+	// 			if(error) return reject(error)
+
+	// 			resolve(characteristic)
+	// 		})
+	// 	})
+	// }
+
+	public async getServicesAndCharataristics(serviceUUIDs: Array<string> = [], characteristicUUIDs: Array<string> = []): Promise<{services : Noble.Service[], characteristics: Noble.Characteristic[]}>
 	{
 		return new Promise((resolve, reject) => {
-
-			console.log('FETCHING DATA')
-
 			this.peripheral.discoverSomeServicesAndCharacteristics(this.serviceUUIDs, this.characteristicUUIDs, () =>
 			(
 				error: string,
@@ -104,9 +160,6 @@ export default class Sensor {
 				chararacteristics: Noble.Characteristic[]
 			) => {
 				if(error) return reject(error)
-
-				this.characteristics = chararacteristics
-				this.services = services
 
 				resolve({
 					services : services,
@@ -116,13 +169,10 @@ export default class Sensor {
 		})
 	}
 
-	public async discoverAllServicesAndCharacteristics(): Promise<void>
+	public async getCharacteristics(characteristicUUIDs: Array<string> = []): Promise<Noble.Characteristic[]>
 	{
 		return new Promise((resolve, reject) => {
-
-			console.log('FETCHING DATA')
-
-			this.peripheral.discoverAllServicesAndCharacteristics(
+			this.peripheral.discoverSomeServicesAndCharacteristics([], characteristicUUIDs, () =>
 			(
 				error: string,
 				services: Noble.Service[],
@@ -130,12 +180,40 @@ export default class Sensor {
 			) => {
 				if(error) return reject(error)
 
-				this.characteristics = chararacteristics
-				this.services = services
-
-				resolve()
+				resolve(chararacteristics)
 			})
 		})
+	}
+
+	public async getCharacteristic(characteristicUUID: string): Promise<Noble.Characteristic>
+	{
+		return new Promise((resolve, reject) => {
+			this.peripheral.discoverSomeServicesAndCharacteristics([], [characteristicUUID], () =>
+			(
+				error: string,
+				services: Noble.Service[],
+				chararacteristics: Noble.Characteristic[]
+			) => {
+				if(error) return reject(error)
+
+				resolve(chararacteristics.find(char => char.uuid == characteristicUUID))
+			})
+		})
+	}
+
+	// public getCharacteristics(): Array<Noble.Characteristic>
+	// {
+	// 	return this.characteristics	
+	// }
+
+	// public getCharacteristic(uuid: CHAR)
+	// {
+	// 	return this.characteristics.find(char => char.uuid == uuid)
+	// }
+
+	public getServices(): Array<Noble.Service>
+	{
+		return this.services
 	}
 
     public async disconnect(): Promise<void>
@@ -191,33 +269,26 @@ export default class Sensor {
 		return serviceData[0].data.toString('utf8').trim() as TRIGGER
 	}
 
-	public getCharacteristics(): Array<Noble.Characteristic>
+	public async readCharacteristic(uuid: CHAR): Promise<Buffer>
 	{
-		return this.characteristics	
-	}
+		return new Promise(async (resolve, reject) => {
 
-	public async readCharacteristic(uuid: CHAR): Promise<{data: Buffer}>
-	{
-		return new Promise((resolve, reject) => {
-
-			const characteristic = this.getCharacteristic(uuid)
+			const characteristic = await this.getCharacteristic(uuid)
 			if(!characteristic) return reject('No characteristic with that UUID found')
 
 			characteristic.read((error: string, data: Buffer) => {
 				if(error) return reject(error)
 
-				resolve({
-					data : data
-				})
+				resolve(data)
 			})
 		})
 	}
 
 	public async writeValue(value: number, uuid: CHAR): Promise<void>
 	{
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 
-			const characteristic = this.getCharacteristic(uuid)
+			const characteristic = await this.getCharacteristic(uuid)
 			if(!characteristic) return reject('No characteristic with that UUID found')
 			
 			const buffer = Buffer.from([value])
@@ -228,16 +299,6 @@ export default class Sensor {
 				resolve()
 			})
 		})
-	}
-
-	public getCharacteristic(uuid: CHAR)
-	{
-		return this.characteristics.find(char => char.uuid == uuid)
-	}
-
-	public getServices(): Array<Noble.Service>
-	{
-		return this.services
 	}
 
 	public getRssi()

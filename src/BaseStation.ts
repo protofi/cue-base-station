@@ -78,12 +78,14 @@ export default class BaseStation {
             await this.bluetooth.stopScanning()
         })
 
-        this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, () => {
+        this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, (payload) => {
             
             console.log("CALIBRATIONS MODE activated")
             
+            // const sensorId = '00a050596aa0'//payload.id
+
             this.bluetooth.scan(this.bluetooth.calibrationScannerStrategy, (sensor: Sensor) => {
-                
+
             })
         })
 
@@ -105,13 +107,17 @@ export default class BaseStation {
             this.bluetooth.forgetSensors()
         })
 
+        this.websocket.on(CueWebsocketActions.DEBUG, () => {
+            this.bluetooth.toggleDebug()
+        })
+
         this.websocket.onError(this.errorHandler)
 
         this.pubSub.onError(this.errorHandler)
       
-        // this.bluetooth.onConnectHangup(() => {
-        //     console.log("Connecting to peripheral failed, we should restart everything now")
-        // });
+        this.bluetooth.onCalibration((payload) => {
+            console.log('CALIBRATION CALLBACK', payload)
+        })
       
         this.bluetooth.onAlert((sensor: Sensor) => {
 
@@ -169,7 +175,6 @@ process
     console.log('')
     console.log('**********************************************')
     console.log('')
-
 })
 .on('uncaughtException', error => {
     console.log('')

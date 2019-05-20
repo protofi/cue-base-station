@@ -95,7 +95,7 @@ export default class Websocket {
         })
     }
 
-    public on(action: CueWebsocketActions, cb: (paylod: {}) => void)
+    public on(action: CueWebsocketActions, cb: (paylod: {[key:string]:any}) => void)
     {
         this.actions.set(action, cb)
     }
@@ -137,6 +137,7 @@ export enum CueWebsocketActions {
     SYNC_SENSORS                    = 'sync-sensors',
     FORGET_SENSORS                  = 'forget',
     STOP                            = 'stop',
+    DEBUG                           = 'debug'
 }
 
 export interface CueWebsocketMessage {

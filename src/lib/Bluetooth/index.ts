@@ -1,28 +1,32 @@
-	import * as Noble from 'noble'
-	import { Advertisement } from 'noble'
-	import Sensor, { TRIGGER, CHAR } from './Sensor';
+import * as Noble from 'noble'
+import { Advertisement } from 'noble'
+import Sensor, { TRIGGER, CHAR } from './Sensor'
+import delay from '../../util/delay'
 
-	enum STATE {
+enum STATE {
 	POWER_ON = 'poweredOn'
-	}
+}
 
-	export interface ScannerStrategy {
+export interface ScannerStrategy {
 	(peripheral: Noble.Peripheral) : Promise<Sensor>
-	}
+}
 
-	export default class Bluetooth {
+export default class Bluetooth {
+
+	private debug = false
 
 	private scanning: boolean = false
 
-	private cueSensorName = 'home-cue'
+	private cueSensorName = 'cue'
 	private knownSensors: Set<string> = new Set()
 
 	private connectedSensor: Sensor = null
 
-	private heartbeatCallback: 		(sensor: Sensor) => void = null
-	private deviceFoundCallback: 	(sensor: Sensor) => void = null
-	private audioTriggerCallback: 	(sensor: Sensor) => void = null
-	private buttonTriggerCallback: 	(sensor: Sensor) => void = null
+	private heartbeatCallback: 			(sensor: Sensor) => void = null
+	private deviceFoundCallback: 		(sensor: Sensor) => void = null
+	private audioTriggerCallback: 		(sensor: Sensor) => void = null
+	private buttonTriggerCallback: 		(sensor: Sensor) => void = null
+	private calibrationTriggerCallback: (payload: {[key:string]:any}) => void = null
 
 	private defaultScannerStrategy: ScannerStrategy = async (peripheral: Noble.Peripheral): Promise<Sensor> => {
 
@@ -80,9 +84,6 @@
 		console.log('UNKNOWN CUE SENSOR FOUND', `(${sensor.getId()})`)
 		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
 
-		// if((!Object.values(TRIGGER).includes(sensor.getTrigger())))
-		// 	return null
-
 		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON)
 			|| sensor.wasTriggerBy(TRIGGER.BTN)/* LEGACY */))
 		{
@@ -122,7 +123,7 @@
 		console.log('TRIGGER', `(${sensor.getTrigger()})`, (!Object.values(TRIGGER).includes(sensor.getTrigger()) ? 'UNKNOWN' : 'KNOWN'))
 
 		if(!(sensor.wasTriggerBy(TRIGGER.BUTTON)
-			|| sensor.wasTriggerBy(TRIGGER.BTN)/* LEGACY */))
+		  || sensor.wasTriggerBy(TRIGGER.BTN)/* LEGACY */))
 		{
 			return null
 		}
@@ -130,25 +131,76 @@
 		await this.stopScanning()
 		await sensor.connect()
 
-		await sensor.discoverAllServicesAndCharacteristics()
+		// await sensor.discoverAllServicesAndCharacteristics()
+		// console.log(await sensor.getCharacteristics())
 
-		try{
-			const { data : threshold } = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)
+		// const readings: Array<Buffer> = []
 
-			console.log('SOUND THRESHOLD', threshold.readUInt8(0))
+		// console.log('INITIALIZING SOUND LEVEL PROBING')
 
-			await sensor.writeValue(125, CHAR.THRESHOLD_LEVEL)
+		// try
+		// {
+		// 	//flushing value by reading
+		// 	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
-		}catch(e){}
+		// 	await delay(3000)
+
+		// 	console.log('READING VALUE', 1)
 			
-		try{
-			const {data : RSSI } = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		// 	readings.push(
+		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		// 	)
 
-			console.log('RSSI  SIGNED', RSSI.readInt8(0))
-			console.log('RSSI USIGNED', RSSI.readUInt8(0))
-		}catch(e){}
+		// 	this.calibrationTriggerCallback({
+		// 		probeCount : 0,
+		// 	})
 
-		sensor.disconnect()
+		// 	await delay(3000)
+
+		// 	console.log('READING VALUE', 2)
+			
+		// 	readings.push(
+		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		// 	)
+
+		// 	this.calibrationTriggerCallback({
+		// 		probeCount : 1,
+		// 	})
+
+		// 	await delay(3000)
+
+		// 	console.log('READING VALUE', 3)
+			
+		// 	readings.push(
+		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		// 	)
+
+		// 	this.calibrationTriggerCallback({
+		// 		probeCount : 2,
+		// 	})
+		// }
+		// catch(e)
+		// {
+		// 	console.log('ERROR', e)
+		// }
+
+		// try{
+		// 	const { data : threshold } = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)
+
+		// 	console.log('SOUND THRESHOLD', threshold.readUInt8(0))
+
+		// 	await sensor.writeValue(125, CHAR.THRESHOLD_LEVEL)
+
+		// }catch(e){}
+			
+		// try{
+		// 	const {data : RSSI } = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+
+		// 	console.log('RSSI  SIGNED', RSSI.readInt8(0))
+		// 	console.log('RSSI USIGNED', RSSI.readUInt8(0))
+		// }catch(e){}
+
+		await sensor.disconnect()
 		this.scan()
 
 		return sensor 
@@ -186,6 +238,9 @@
 		if(!peripheral) return
 		if(!this.scanning) return
 
+		if(this.debug)
+			console.log('BLUETOOTH DEVICE FOUND', peripheral.advertisement.localName)
+
 		const sensor: Sensor = await this.scannerStrategy(peripheral)
 
 		if(!sensor) return
@@ -211,12 +266,13 @@
 	public stopScanning(): Promise<void>
 	{
 		this.scanning = false
+
 		return new Promise((resolve, reject) => {
 			Noble.stopScanning(resolve)
 		})
 	}
 
-	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void)
+	public scan(scannerStrategy?: ScannerStrategy, deviceFoundCallback?: (sensor: Sensor) => void, scanFilter: Array<string> = [])
 	{
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultScannerStrategy
 		this.deviceFoundCallback = deviceFoundCallback
@@ -245,7 +301,7 @@
 			return
 		}
 
-		Noble.startScanning([], true) // any service UUID, duplicates allowed
+		Noble.startScanning(scanFilter, false)
 		this.scanning = true
 	}
 
@@ -269,6 +325,11 @@
 		this.buttonTriggerCallback = cb
 	}
 
+	public onCalibration(cb: (payload: {[key:string]:any}) => void): void
+	{
+		this.calibrationTriggerCallback = cb
+	}
+
 	public onHeartbeat(cb: (sensor: Sensor) => void): void
 	{
 		this.heartbeatCallback = cb
@@ -279,5 +340,10 @@
 		sensors.forEach(sensorId => {
 			this.knownSensors.add(sensorId)
 		})
+	}
+
+	public toggleDebug(): void
+	{
+		this.debug = !this.debug
 	}
 }
