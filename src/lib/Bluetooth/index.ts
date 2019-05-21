@@ -136,7 +136,10 @@ export default class Bluetooth {
 		// console.log(sensor.getCharacteristics())
 
 		const data = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-		console.log(data.readInt8(0))
+
+		console.log('Signed', 	data.readInt8(0))
+		console.log('Unsigned', data.readUInt8(0))
+
 		// await sensor.discoverAllServicesAndCharacteristics()
 		// console.log(await sensor.getCharacteristics())
 
@@ -189,22 +192,6 @@ export default class Bluetooth {
 		// {
 		// 	console.log('ERROR', e)
 		// }
-
-		// try{
-		// 	const { data : threshold } = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)
-
-		// 	console.log('SOUND THRESHOLD', threshold.readUInt8(0))
-
-		// 	await sensor.writeValue(125, CHAR.THRESHOLD_LEVEL)
-
-		// }catch(e){}
-			
-		// try{
-		// 	const {data : RSSI } = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-
-		// 	console.log('RSSI  SIGNED', RSSI.readInt8(0))
-		// 	console.log('RSSI USIGNED', RSSI.readUInt8(0))
-		// }catch(e){}
 
 		await sensor.disconnect()
 		this.scan()

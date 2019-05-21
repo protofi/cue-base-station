@@ -29,15 +29,16 @@ export default class Sensor {
 		CHAR.RSSI_LEVEL
 	]
 
-    private id: string
-	private rssi: number
-	
-	private state: STATE
+    private id				: string
+	private rssi			: number
 
-    private peripheral: Noble.Peripheral
-    private characteristics: Array<Noble.Characteristic>
-	private services: Array<Noble.Service>
-	private stateChecker: NodeJS.Timeout
+    private peripheral		: Noble.Peripheral
+
+	private characteristics	: Map<string, Noble.Characteristic> = new Map()
+	private services 		: Map<string, Noble.Service> = new Map()
+
+	private state			: STATE
+	private stateChecker	: NodeJS.Timeout
 
 	private connectedPromiseResolution:  (value?: void | PromiseLike<void>) => void
 	private disconnectPromiseResolution: (value?: void | PromiseLike<void>) => void
@@ -92,11 +93,6 @@ export default class Sensor {
 		delete this.connectedPromiseResolution
 	}
 
-	public getServices(): Array<Noble.Service>
-	{
-		return this.services
-	}
-
     public async disconnect(): Promise<void>
     {
 		return new Promise((resovle, reject) => {
@@ -110,6 +106,9 @@ export default class Sensor {
 	public async fetchServicesAndCharacteristics(): Promise<void>
 	{
 		return new Promise((resolve, reject) => {
+
+			console.log('FECTHING CHARACTERISTICS')
+
 			this.peripheral.discoverAllServicesAndCharacteristics(
 			(
 				error: string,
@@ -118,8 +117,13 @@ export default class Sensor {
 			) => {
 				if(error) return reject(error)
 
-				this.services = services
-				this.characteristics = characteristics
+				characteristics.forEach((char: Noble.Characteristic) => {
+					this.characteristics.set(char.uuid, char)
+				})
+
+				services.forEach((service: Noble.Service) => {
+					this.services.set(service.uuid, service)
+				})
 
 				resolve()
 			})
@@ -128,7 +132,12 @@ export default class Sensor {
 
 	public async getCharacteristic(uuid: CHAR): Promise<Noble.Characteristic>
 	{
+		if(this.characteristics.has(uuid)) return this.characteristics.get(uuid)
+		
 		return new Promise((resolve, reject) => {
+
+			console.log('FECTHING CHARACTERISTIC')
+
 			this.peripheral.discoverSomeServicesAndCharacteristics([], [uuid],
 			(
 				error: string,
@@ -136,14 +145,13 @@ export default class Sensor {
 				characteristics: Noble.Characteristic[]
 			) => {
 				if(error) return reject(error)
-
-
+				if(characteristics[0]) 	this.characteristics.set(uuid, characteristics[0])
 				resolve(characteristics[0])
 			})
 		})
 	}
 
-	public getCharacteristics()
+	public getCharacteristics(): Map<string, Noble.Characteristic>
 	{
 		return this.characteristics
 	}
