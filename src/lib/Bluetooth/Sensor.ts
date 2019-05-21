@@ -126,6 +126,23 @@ export default class Sensor {
 		})
 	}
 
+	public async getCharacteristic(uuid: CHAR): Promise<Noble.Characteristic>
+	{
+		return new Promise((resolve, reject) => {
+			this.peripheral.discoverSomeServicesAndCharacteristics([], [uuid],
+			(
+				error: string,
+				services: Noble.Service[],
+				characteristics: Noble.Characteristic[]
+			) => {
+				if(error) return reject(error)
+
+
+				resolve(characteristics[0])
+			})
+		})
+	}
+
 	public getCharacteristics()
 	{
 		return this.characteristics
@@ -178,14 +195,14 @@ export default class Sensor {
 	{
 		return new Promise(async (resolve, reject) => {
 
-			// const characteristic = await this.getCharacteristic(uuid)
-			// if(!characteristic) return reject('No characteristic with that UUID found')
+			const characteristic = await this.getCharacteristic(uuid)
+			if(!characteristic) return reject('No characteristic with that UUID found')
 
-			// characteristic.read((error: string, data: Buffer) => {
-			// 	if(error) return reject(error)
+			characteristic.read((error: string, data: Buffer) => {
+				if(error) return reject(error)
 
-				resolve()
-			// })
+				resolve(data)
+			})
 		})
 	}
 

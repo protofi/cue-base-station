@@ -131,10 +131,12 @@ export default class Bluetooth {
 		await this.stopScanning()
 		await sensor.connect()
 
-		await sensor.fetchServicesAndCharacteristics()
+		// await sensor.fetchServicesAndCharacteristics()
 
-		console.log(sensor.getCharacteristics())
+		// console.log(sensor.getCharacteristics())
 
+		const data = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		console.log(data.readInt8(0))
 		// await sensor.discoverAllServicesAndCharacteristics()
 		// console.log(await sensor.getCharacteristics())
 
