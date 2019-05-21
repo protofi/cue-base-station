@@ -1,7 +1,9 @@
 import PubSub, { Topics } from "./lib/PubSub";
 import Websocket, { CueWebsocketActions } from "./lib/Websocket";
 import Bluetooth from "./lib/Bluetooth";
-import Sensor from "./lib/Bluetooth/Sensor";
+import Sensor, { CHAR } from "./lib/Bluetooth/Sensor";
+import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
+import delay from "./util/delay";
 
 enum TIMER {
     PAIRING = 'pairing'
@@ -42,7 +44,7 @@ export default class BaseStation {
                 console.log('WEBSOCKET CONNECTED', this.websocket.getAdress()) 
 
                 const address = this.websocket.getAdress()
-
+    
                 this.pubSub.publish(Topics.UPDATE_WEBSOCKET, {
                     base_station_port       : address.port,
                     base_station_address    : address.address
@@ -61,12 +63,19 @@ export default class BaseStation {
             
             console.log("PAIRING MODE activated")
 
-            this.bluetooth.scan(this.bluetooth.pairingScannerStrategy, (sensor: Sensor) => {
+            this.bluetooth.scan(new PairingScannerStrategy(this.bluetooth), (sensor: Sensor) => {
                 const sensorId = sensor.getId()
 
                 this.pubSub.publish(Topics.NEW_SENSOR, {
                     id : sensorId
                 })
+                
+                // this.pubSub.publish(Topics.HEARTBEAT, {
+                //     id              : sensor.getId(),
+                //     signal_strength : sensor.getRssi(),
+                //     battery_level   : Math.random()*100,
+                // })
+                this.bluetooth.scan()
             })
 
             this.startTimer(TIMER.PAIRING, () => {
@@ -74,8 +83,8 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(CueWebsocketActions.STOP, async () => {
-            await this.bluetooth.stopScanning()
+        this.websocket.on(CueWebsocketActions.STOP, () => {
+            this.bluetooth.stopScanning()
         })
 
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, (payload) => {
@@ -84,8 +93,44 @@ export default class BaseStation {
             
             // const sensorId = '00a050596aa0'//payload.id
 
-            this.bluetooth.scan(this.bluetooth.calibrationScannerStrategy, (sensor: Sensor) => {
+            this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
 
+                const readings: Array<Buffer> = []
+
+                const probeCount = 3
+                const timeBetweenProbes = 5000
+
+                try
+                {
+                	//flushing value by reading
+                	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+
+                	console.log('INITIALIZING SOUND LEVEL PROBING')
+
+                	for (let i = 0; i < probeCount; i++)
+                	{
+                		await delay(timeBetweenProbes)
+
+                		console.log('READING VALUE', i)
+                        
+                		readings.push(
+                			await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+                		)
+            
+                        console.log('CALIBRATION PROBING', i)
+                    }
+
+                    readings.forEach((buffer: Buffer) => {
+                        console.log('READING', buffer.readUInt8(0))
+                    })
+                }
+                catch(e)
+                {
+                	console.log('ERROR', e)
+                }
+
+                await sensor.disconnect()
+                this.bluetooth.scan()
             })
         })
 
@@ -102,7 +147,6 @@ export default class BaseStation {
             this.bluetooth.disconnectPeripheral()
         })
 
-
         this.websocket.on(CueWebsocketActions.FORGET_SENSORS, () => {
             this.bluetooth.forgetSensors()
         })
@@ -114,33 +158,12 @@ export default class BaseStation {
         this.websocket.onError(this.errorHandler)
 
         this.pubSub.onError(this.errorHandler)
-      
-        this.bluetooth.onCalibration((payload) => {
-            console.log('CALIBRATION CALLBACK', payload)
-
-            payload.readings.forEach((buffer: Buffer) => {
-
-                console.log(buffer.readUInt8(0))
-            });
-        })
-      
+       
         this.bluetooth.onAlert((sensor: Sensor) => {
 
             this.pubSub.publish(Topics.NOTIFICATION, {
                 id : sensor.getId()
             })
-        })
-
-        this.bluetooth.onHeartbeat((sensor: Sensor) => {
-            this.pubSub.publish(Topics.HEARTBEAT, {
-                id              : sensor.getId(),
-                signal_strength : sensor.getRssi(),
-                battery_level   : Math.random()*100,
-            })
-        })
-      
-        this.bluetooth.onButton(() => {
-            console.log("SENSOR BUTTON WAS PRESSED")
         })
     }
 

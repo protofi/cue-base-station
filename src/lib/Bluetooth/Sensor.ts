@@ -22,13 +22,6 @@ export enum STATE {
 }
 export default class Sensor {
 	
-	private serviceUUIDs: Array<string> = []
-	
-	private characteristicUUIDs: Array<string> = [
-		CHAR.THRESHOLD_LEVEL,
-		CHAR.RSSI_LEVEL
-	]
-
     private id				: string
 	private rssi			: number
 
@@ -45,9 +38,9 @@ export default class Sensor {
 
     constructor(peripheral: Noble.Peripheral)
     {
-        this.peripheral = peripheral
         this.id 		= peripheral.id
 		this.rssi 		= peripheral.rssi
+        this.peripheral = peripheral
 	}
 	
 	public async touch(): Promise<void>
@@ -138,14 +131,14 @@ export default class Sensor {
 
 			console.log('FECTHING CHARACTERISTIC')
 
-			this.peripheral.discoverSomeServicesAndCharacteristics([], [uuid],
-			(
+			this.peripheral.discoverSomeServicesAndCharacteristics([], [uuid], (
 				error: string,
 				services: Noble.Service[],
 				characteristics: Noble.Characteristic[]
 			) => {
 				if(error) return reject(error)
-				if(characteristics[0]) 	this.characteristics.set(uuid, characteristics[0])
+				if(characteristics[0]) this.characteristics.set(uuid, characteristics[0])
+	
 				resolve(characteristics[0])
 			})
 		})
@@ -204,7 +197,7 @@ export default class Sensor {
 		return new Promise(async (resolve, reject) => {
 
 			const characteristic = await this.getCharacteristic(uuid)
-			if(!characteristic) return reject('No characteristic with that UUID found')
+			if(!characteristic) return reject('No characteristic with the specified UUID found')
 
 			characteristic.read((error: string, data: Buffer) => {
 				if(error) return reject(error)
@@ -219,7 +212,7 @@ export default class Sensor {
 		return new Promise(async (resolve, reject) => {
 
 			// const characteristic = await this.getCharacteristic(uuid)
-			// if(!characteristic) return reject('No characteristic with that UUID found')
+			// if(!characteristic) return reject('No characteristic with the specified UUID found')
 			
 			// const buffer = Buffer.from([value])
 
