@@ -131,67 +131,38 @@ export default class Bluetooth {
 		await this.stopScanning()
 		await sensor.connect()
 
-		// await sensor.fetchServicesAndCharacteristics()
+		const readings: Array<Buffer> = []
 
-		// console.log(sensor.getCharacteristics())
+		const probeCount = 3
+		const timeBetweenProbes = 5000
 
-		const data = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+		try
+		{
+			//flushing value by reading
+			await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
-		console.log('Signed', 	data.readInt8(0))
-		console.log('Unsigned', data.readUInt8(0))
+			console.log('INITIALIZING SOUND LEVEL PROBING')
 
-		// await sensor.discoverAllServicesAndCharacteristics()
-		// console.log(await sensor.getCharacteristics())
+			for (let i = 0; i < probeCount; i++)
+			{
+				await delay(timeBetweenProbes)
 
-		// const readings: Array<Buffer> = []
-
-		// console.log('INITIALIZING SOUND LEVEL PROBING')
-
-		// try
-		// {
-		// 	//flushing value by reading
-		// 	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-
-		// 	await delay(3000)
-
-		// 	console.log('READING VALUE', 1)
-			
-		// 	readings.push(
-		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-		// 	)
-
-		// 	this.calibrationTriggerCallback({
-		// 		probeCount : 0,
-		// 	})
-
-		// 	await delay(3000)
-
-		// 	console.log('READING VALUE', 2)
-			
-		// 	readings.push(
-		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-		// 	)
-
-		// 	this.calibrationTriggerCallback({
-		// 		probeCount : 1,
-		// 	})
-
-		// 	await delay(3000)
-
-		// 	console.log('READING VALUE', 3)
-			
-		// 	readings.push(
-		// 		await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-		// 	)
-
-		// 	this.calibrationTriggerCallback({
-		// 		probeCount : 2,
-		// 	})
-		// }
-		// catch(e)
-		// {
-		// 	console.log('ERROR', e)
-		// }
+				console.log('READING VALUE', i)
+				
+				readings.push(
+					await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+				)
+	
+				this.calibrationTriggerCallback({
+					probeCount : i,
+					readings : readings
+				})
+			}
+		}
+		catch(e)
+		{
+			console.log('ERROR', e)
+		}
 
 		await sensor.disconnect()
 		this.scan()

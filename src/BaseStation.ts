@@ -117,6 +117,11 @@ export default class BaseStation {
       
         this.bluetooth.onCalibration((payload) => {
             console.log('CALIBRATION CALLBACK', payload)
+
+            payload.readings.forEach((buffer: Buffer) => {
+
+                console.log(buffer.readUInt8(0))
+            });
         })
       
         this.bluetooth.onAlert((sensor: Sensor) => {
