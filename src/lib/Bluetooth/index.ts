@@ -17,7 +17,7 @@ export default class Bluetooth {
 
 	private scanning: boolean = false
 
-	private cueSensorName = 'cue'
+	private cueSensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 
 	private connectedSensor: Sensor = null
@@ -130,6 +130,10 @@ export default class Bluetooth {
 
 		await this.stopScanning()
 		await sensor.connect()
+
+		await sensor.fetchServicesAndCharacteristics()
+
+		console.log(sensor.getCharacteristics())
 
 		// await sensor.discoverAllServicesAndCharacteristics()
 		// console.log(await sensor.getCharacteristics())
@@ -301,7 +305,7 @@ export default class Bluetooth {
 			return
 		}
 
-		Noble.startScanning(scanFilter, false)
+		Noble.startScanning(scanFilter, true)
 		this.scanning = true
 	}
 
