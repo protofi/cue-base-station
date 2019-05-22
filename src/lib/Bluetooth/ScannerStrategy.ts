@@ -5,12 +5,14 @@ import delay from '../../util/delay';
 
 export default interface iScannerStrategy
 {
-    onDiscover(peripheral: Noble.Peripheral): Promise<Sensor>
+	onDiscover(peripheral: Noble.Peripheral): Promise<Sensor>
+	disconnectPeripheral(): void
 }
 
 class ScannerStrategy
 {
-    protected bluetooth: Bluetooth
+	protected bluetooth: Bluetooth
+	protected connectedSensor: Sensor
     
     constructor(bluetooth : Bluetooth) {
         this.bluetooth = bluetooth
@@ -28,7 +30,13 @@ class ScannerStrategy
 		if(localName != CUE_SENSOR_NAME) return null
 
         return new Sensor(peripheral)
-    }
+	}
+	
+	public disconnectPeripheral(): void
+	{
+		if(this.connectedSensor)
+			this.connectedSensor.disconnect()
+	}
 }
 export class DefaultScannerStrategy extends ScannerStrategy implements iScannerStrategy
 {
@@ -50,9 +58,16 @@ export class DefaultScannerStrategy extends ScannerStrategy implements iScannerS
 
 		if((!Object.values(TRIGGER).includes(sensor.getTrigger())))	return null
 
+		// If sensor was not triggered by audio, continue scanning
+		if(!(sensor.wasTriggerBy(TRIGGER.AUDIO)
+		|| sensor.wasTriggerBy(TRIGGER.AUD))/* LEGACY */)
+		{
+			return null
+		}
+
 		await this.bluetooth.stopScanning()
 
-		await sensor.touch()
+		this.connectedSensor = sensor
 		
 		return sensor
     }
@@ -84,6 +99,7 @@ export class CalibrationScannerStrategy extends ScannerStrategy implements iScan
 
 		await this.bluetooth.stopScanning()
 		await sensor.connect()
+		this.connectedSensor = sensor
 
 		return sensor
     }
@@ -117,6 +133,7 @@ export class PairingScannerStrategy extends ScannerStrategy implements iScannerS
 
 		await this.bluetooth.stopScanning()
 		await sensor.touch()
+		this.connectedSensor = sensor
         
         return sensor
     }

@@ -1,7 +1,5 @@
 import * as Noble from 'noble'
-import { Advertisement } from 'noble'
-import Sensor, { TRIGGER, CHAR } from './Sensor'
-import delay from '../../util/delay'
+import Sensor, { TRIGGER } from './Sensor'
 import iScannerStrategy, { DefaultScannerStrategy } from './ScannerStrategy';
 
 enum STATE {
@@ -22,28 +20,16 @@ export default class Bluetooth {
 
 	private knownSensors: Set<string> = new Set()
 
-	private connectedSensor: Sensor = null
-
-	private heartbeatCallback: 			(sensor: Sensor) => void = null
 	private audioTriggerCallback: 		(sensor: Sensor) => void = null
 	private deviceDiscoveredCallback: 	(sensor: Sensor) => void = null
 
-	private defaultDiscoverStrategy = new DefaultScannerStrategy(this)
-	private scannerStrategy: iScannerStrategy = this.defaultDiscoverStrategy
+	private defaultDiscoverStrategy: iScannerStrategy 	= new DefaultScannerStrategy(this)
+	private scannerStrategy: iScannerStrategy 			= this.defaultDiscoverStrategy
 
 	private defaultDiscoverCallback = async (sensor: Sensor): Promise<void> =>
 	{
-		if(this.heartbeatCallback)
-			this.heartbeatCallback(sensor)
-
-		if(sensor.wasTriggerBy(TRIGGER.AUDIO)
-		|| sensor.wasTriggerBy(TRIGGER.AUD)/* LEGACY */)
-		{
-			if(this.audioTriggerCallback)
-				this.audioTriggerCallback(sensor)
-		}
-
-		this.scan()
+		if(this.audioTriggerCallback)
+			this.audioTriggerCallback(sensor)
 	}
 
 	private stateChangeActions: Map<string, () => void> = new Map()
@@ -62,7 +48,7 @@ export default class Bluetooth {
 		})
 		
 		this.knownSensors.add('00a050cf66d7')
-		// this.knownSensors.add('00a050596aa0')
+		this.knownSensors.add('00a050596aa0')
 	}
 
 	public knows(sensor: Sensor): boolean
@@ -70,42 +56,22 @@ export default class Bluetooth {
 		return this.knownSensors.has(sensor.getId())
 	}
 
-	public pairSensor(sensor: Sensor)
+	public pairSensor(sensor: Sensor): void
 	{
 		this.knownSensors.add(sensor.getId())
 	}
 
-	private onStateChange(state: string)
+	private onStateChange(state: string): void
 	{
 		console.log('STATE CHANGE:', state)
 		const action = this.stateChangeActions.get(state)
 		if(action) action()
 	}
 
-	private async onDiscover(peripheral: Noble.Peripheral): Promise<void>
-	{
-		if(!this.scanning) return
-
-		const sensor: Sensor = await this.scannerStrategy.onDiscover(peripheral)
-
-		if(!sensor) return
-
-		if(this.deviceDiscoveredCallback)
-			this.deviceDiscoveredCallback(sensor)
-	}
-
-	public disconnectPeripheral()
+	public disconnectPeripheral(): void
 	{
 		console.log('DISCONNECTING SENSOR FROM BLE')
-
-		if(this.connectedSensor)
-		{
-			this.connectedSensor.disconnect()
-		}
-		else
-		{
-			console.log('NO SENSOR FOUND')
-		}
+		this.scannerStrategy.disconnectPeripheral()
 	}
 
 	public stopScanning(): Promise<void>
@@ -137,6 +103,18 @@ export default class Bluetooth {
 		this.scanning = true
 	}
 
+	private async onDiscover(peripheral: Noble.Peripheral): Promise<void>
+	{
+		if(!this.scanning) return
+
+		const sensor: Sensor = await this.scannerStrategy.onDiscover(peripheral)
+
+		if(!sensor) return
+
+		if(this.deviceDiscoveredCallback)
+			this.deviceDiscoveredCallback(sensor)
+	}
+
 	public forgetSensors()
 	{
 		this.knownSensors.clear()
@@ -147,7 +125,7 @@ export default class Bluetooth {
 		this.stateChangeActions.set(STATE.POWER_ON, cb)
 	}
 
-	public onAlert(cb: (sensor: Sensor) => void): void
+	public onAudioTrigger(cb: (sensor: Sensor) => void): void
 	{
 		this.audioTriggerCallback = cb
 	}

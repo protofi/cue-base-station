@@ -12,10 +12,10 @@ export default class Websocket {
     private maxConnectionAttempts = 10
     private connectionAttempCount = 0
     
-    private connectedCallback: () => void = () => { console.log('CONNECTED', this.port) }
+    private connectedCallback: () => void = () => console.log('CONNECTED', this.port)
     private errorCallback: (error: Error) => void = console.log
 
-    private actions: Map<CueWebsocketActions, (payload?:{}) => void> = new Map()
+    private actions: Map<WebsocketActions, (payload?:{}) => void> = new Map()
 
     constructor () {}
 
@@ -95,7 +95,7 @@ export default class Websocket {
         })
     }
 
-    public on(action: CueWebsocketActions, cb: (paylod: {[key:string]:any}) => void)
+    public on(action: WebsocketActions, cb: (paylod: {[key:string]:any}) => void)
     {
         this.actions.set(action, cb)
     }
@@ -129,18 +129,18 @@ export default class Websocket {
     }
 }
 
-export enum CueWebsocketActions {
-    DISCONNECT_ATTACHED_PERIPHERAL  = 'disconnect',
-    ACTIVATE_CALIBATION_MODE        = 'calibration',
-    ACTIVATE_LISTENING_MODE         = 'listen',
-    ACTIVATE_PAIRING_MODE           = 'pairing',
-    SYNC_SENSORS                    = 'sync-sensors',
-    FORGET_SENSORS                  = 'forget',
-    STOP                            = 'stop',
-    DEBUG                           = 'debug'
+export enum WebsocketActions {
+    DISCONNECT_PERIPHERAL   = 'disconnect',
+    CALIBATION_MODE         = 'calibration',
+    LISTENING_MODE          = 'listen',
+    FORGET_SENSORS          = 'forget',
+    PAIRING_MODE            = 'pairing',
+    SYNC_SENSORS            = 'sync-sensors',
+    DEBUG                   = 'debug',
+    STOP                    = 'stop',
 }
 
 export interface CueWebsocketMessage {
-    action  : CueWebsocketActions
+    action  : WebsocketActions
     payload : {}
 }

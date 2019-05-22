@@ -1,5 +1,5 @@
 import PubSub, { Topics } from "./lib/PubSub";
-import Websocket, { CueWebsocketActions } from "./lib/Websocket";
+import Websocket, { WebsocketActions } from "./lib/Websocket";
 import Bluetooth from "./lib/Bluetooth";
 import Sensor, { CHAR } from "./lib/Bluetooth/Sensor";
 import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
@@ -59,11 +59,31 @@ export default class BaseStation {
 
     private mountHooks(): void
     {
-        this.websocket.on(CueWebsocketActions.ACTIVATE_PAIRING_MODE, () => {
+        this.bluetooth.onAudioTrigger(async (sensor: Sensor) => {
+
+            this.pubSub.publish(Topics.NOTIFICATION, {
+                id : sensor.getId()
+            })
+
+            await sensor.touch()
+    
+            this.pubSub.publish(Topics.HEARTBEAT, {
+                id              : sensor.getId(),
+                signal_strength : sensor.getRssi(),
+                battery_level   : Math.random()*100,
+            })
+
+			this.bluetooth.scan()
+        })
+
+        this.websocket.on(WebsocketActions.PAIRING_MODE, () => {
             
             console.log("PAIRING MODE activated")
 
             this.bluetooth.scan(new PairingScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
+                
+                this.clearTimer(TIMER.PAIRING)
+
                 const sensorId = sensor.getId()
 
                 await this.pubSub.publish(Topics.NEW_SENSOR, {
@@ -84,13 +104,11 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(CueWebsocketActions.STOP, this.bluetooth.stopScanning)
-
-        this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, (payload) => {
+        this.websocket.on(WebsocketActions.CALIBATION_MODE, (payload) => {
             
             console.log("CALIBRATIONS MODE activated")
             
-            // const sensorId = '00a050596aa0'//payload.id
+            const sensorId = '00a050596aa0'//payload.id
 
             this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
 
@@ -130,40 +148,22 @@ export default class BaseStation {
 
                 await sensor.disconnect()
                 this.bluetooth.scan()
-            })
+            }, [CHAR.MAX_AUDIO_LEVEL])
         })
 
-        this.websocket.on(CueWebsocketActions.SYNC_SENSORS, (payload: any) => {
+        this.websocket.on(WebsocketActions.SYNC_SENSORS, (payload: any) => {
             console.log('SYNC SENSORS', payload)
             this.bluetooth.syncSensors(payload.sensors)
         })
 
-        this.websocket.on(CueWebsocketActions.ACTIVATE_LISTENING_MODE, () => {
-            this.bluetooth.scan()
-        })
+        this.websocket.on(WebsocketActions.LISTENING_MODE,          () => this.bluetooth.scan())
+        this.websocket.on(WebsocketActions.DISCONNECT_PERIPHERAL,   () => this.bluetooth.disconnectPeripheral())
+        this.websocket.on(WebsocketActions.FORGET_SENSORS,          () => this.bluetooth.forgetSensors())
+        this.websocket.on(WebsocketActions.DEBUG,                   () => this.bluetooth.toggleDebug())
+        this.websocket.on(WebsocketActions.STOP,                    () => this.bluetooth.stopScanning())
 
-        this.websocket.on(CueWebsocketActions.DISCONNECT_ATTACHED_PERIPHERAL, () => {
-            this.bluetooth.disconnectPeripheral()
-        })
-
-        this.websocket.on(CueWebsocketActions.FORGET_SENSORS, () => {
-            this.bluetooth.forgetSensors()
-        })
-
-        this.websocket.on(CueWebsocketActions.DEBUG, () => {
-            this.bluetooth.toggleDebug()
-        })
-
-        this.websocket.onError(this.errorHandler)
-
-        this.pubSub.onError(this.errorHandler)
-       
-        this.bluetooth.onAlert((sensor: Sensor) => {
-
-            this.pubSub.publish(Topics.NOTIFICATION, {
-                id : sensor.getId()
-            })
-        })
+        this.websocket.onError(this.errorHandler.bind(this))
+        this.pubSub.onError(this.errorHandler.bind(this))
     }
 
     private errorHandler(error: Error): void
