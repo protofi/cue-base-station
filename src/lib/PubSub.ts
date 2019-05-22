@@ -64,13 +64,13 @@ export default class PubSub {
             this.errorCallback(error)
         })
 
-        this.client.on('packetsend', message => {
-            // console.log('packetsend', message.cmd, message.messageId)
-        })
+        // this.client.on('packetsend', message => {
+        //     console.log('packetsend', message.cmd, message.messageId)
+        // })
 
-        this.client.on('packetreceive', message => {
-            // console.log('packetreceive', message.cmd, message.messageId)
-        })
+        // this.client.on('packetreceive', message => {
+        //     console.log('packetreceive', message.cmd, message.messageId)
+        // })
 
         // this.client.on('message', (topic, message: string, packet) => {
         //     console.log('message received: ', Buffer.from(message, 'base64').toString('ascii'))
@@ -147,7 +147,7 @@ export default class PubSub {
         this.connectedCallback()
     }
 
-    public publish(topic: string, payload: {} = {})
+    public publish(topic: string, payload: {} = {}): Promise<void>
     {
         this.checkAuth()
 
@@ -157,11 +157,17 @@ export default class PubSub {
 
         const mqttTopic = `/devices/${this.deviceUUID}/${this.messageType}/${topic}`
 
-        this.client.publish(
-            mqttTopic,
-            payloadString, {
-                qos: 1 //At least once
-            })
+        return new Promise((resolve, reject) => {
+            this.client.publish(
+                mqttTopic,
+                payloadString, {
+                    qos: 1 //At least once
+                }, (error, packet) => {
+                    if(error) return reject()
+                    resolve()
+                })
+        })
+
     }
 
     public onError(cb: (error: Error) => void): void {

@@ -20,7 +20,6 @@ export default class Bluetooth {
 
 	private scanning: boolean = false
 
-	private cueSensorName = 'home-cue'
 	private knownSensors: Set<string> = new Set()
 
 	private connectedSensor: Sensor = null

@@ -63,18 +63,19 @@ export default class BaseStation {
             
             console.log("PAIRING MODE activated")
 
-            this.bluetooth.scan(new PairingScannerStrategy(this.bluetooth), (sensor: Sensor) => {
+            this.bluetooth.scan(new PairingScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
                 const sensorId = sensor.getId()
 
-                this.pubSub.publish(Topics.NEW_SENSOR, {
+                await this.pubSub.publish(Topics.NEW_SENSOR, {
                     id : sensorId
                 })
                 
-                // this.pubSub.publish(Topics.HEARTBEAT, {
-                //     id              : sensor.getId(),
-                //     signal_strength : sensor.getRssi(),
-                //     battery_level   : Math.random()*100,
-                // })
+                this.pubSub.publish(Topics.HEARTBEAT, {
+                    id              : sensor.getId(),
+                    signal_strength : sensor.getRssi(),
+                    battery_level   : Math.random()*100,
+                })
+
                 this.bluetooth.scan()
             })
 
@@ -83,9 +84,7 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(CueWebsocketActions.STOP, () => {
-            this.bluetooth.stopScanning()
-        })
+        this.websocket.on(CueWebsocketActions.STOP, this.bluetooth.stopScanning)
 
         this.websocket.on(CueWebsocketActions.ACTIVATE_CALIBATION_MODE, (payload) => {
             
