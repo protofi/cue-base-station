@@ -9,6 +9,8 @@ export default class Websocket {
     
     private port: number = 80
 
+    private connections: Map<string, WebSocket.connection> = new Map()
+
     private maxConnectionAttempts = 10
     private connectionAttempCount = 0
     
@@ -73,14 +75,23 @@ export default class Websocket {
         })
 
         this.socket.on('close', (connection: WebSocket.connection, reason: number, desc: string) => {
-            console.log('WEBSOCKET CLOSED CONNECTION')
-            console.log('description:', desc)
-            console.log('reason: ', reason)
+            
+            const connectionAddress = `${connection.socket.remoteAddress}${connection.socket.remotePort}`
+
+            this.connections.delete(connectionAddress)
+
+            console.log('WEBSOCKET CLOSED CONNECTION', connectionAddress)
         })
 
         this.socket.on('request', (request: WebSocket.request) => {
             
             var connection: WebSocket.connection = request.accept()
+
+            const connectionAddress = `${connection.socket.remoteAddress}${connection.socket.remotePort}`
+
+            console.log('CONNECTED', connectionAddress)
+
+            this.connections.set(connectionAddress, connection)
 
             connection.on('message', (message: WebSocket.IMessage) => {
 
@@ -88,10 +99,25 @@ export default class Websocket {
 
                 const cueMessage = JSON.parse(message.utf8Data) as CueWebsocketMessage
 
+                cueMessage.payload.address = connectionAddress
+
                 const action = this.actions.get(cueMessage.action)
 
                 if(action) action(cueMessage.payload)
             })
+        })
+    }
+
+    public async send(payload: any, address: string): Promise<void>
+    {
+        return new Promise((resolve, reject) => {
+            const connection: WebSocket.connection = this.connections.get(address)
+            
+            if(!connection) return reject()
+
+            connection.send(JSON.stringify(payload))
+
+            resolve()
         })
     }
 
@@ -142,5 +168,5 @@ export enum WebsocketActions {
 
 export interface CueWebsocketMessage {
     action  : WebsocketActions
-    payload : {}
+    payload : {[key:string]:any}
 }

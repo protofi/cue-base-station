@@ -108,13 +108,14 @@ export default class BaseStation {
             
             console.log("CALIBRATIONS MODE activated")
             
-            const sensorId = '00a050596aa0'//payload.id
+            const sensorId =    payload.sensorId
+            const probeCount =  payload.count
+
 
             this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
 
                 const readings: Array<Buffer> = []
 
-                const probeCount = 3
                 const timeBetweenProbes = 5000
 
                 try
@@ -122,21 +123,28 @@ export default class BaseStation {
                 	//flushing value by reading
                 	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
-                	console.log('INITIALIZING SOUND LEVEL PROBING')
+                    console.log('INITIALIZING SOUND LEVEL PROBING')
+                    
+                    this.websocket.send({
+                        sensor : sensorId,
+                        probe : 0,
+                    }, payload.address)
 
                 	for (let i = 0; i < probeCount; i++)
                 	{
-                		await delay(timeBetweenProbes)
-
-                		console.log('READING VALUE', i)
+                        await delay(timeBetweenProbes)
                         
-                		readings.push(
-                			await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-                		)
-            
-                        console.log('CALIBRATION PROBING', i)
-                    }
+                        const reading = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
+                        this.websocket.send({
+                            sensor : sensorId,
+                            reading : reading.readUInt8(0),
+                            probe : i+1,
+                        }, payload.address)
+
+                        readings.push(reading)
+                    }
+                    
                     readings.forEach((buffer: Buffer) => {
                         console.log('READING', buffer.readUInt8(0))
                     })
@@ -148,7 +156,7 @@ export default class BaseStation {
 
                 await sensor.disconnect()
                 this.bluetooth.scan()
-            }, [CHAR.MAX_AUDIO_LEVEL])
+            })
         })
 
         this.websocket.on(WebsocketActions.SYNC_SENSORS, (payload: any) => {
