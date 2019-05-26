@@ -6,7 +6,9 @@ import delay from '../../util/delay';
 export default interface iScannerStrategy
 {
 	onDiscover(peripheral: Noble.Peripheral): Promise<Sensor>
-	disconnectPeripheral(): void
+	disconnectSensor(): void
+	getConnectedSensor(): Sensor
+	connectToSensor(sensor: Sensor): Promise<void>
 }
 
 class ScannerStrategy
@@ -31,11 +33,35 @@ class ScannerStrategy
 
         return new Sensor(peripheral)
 	}
+
+	public getConnectedSensor(): Sensor
+	{
+		return this.connectedSensor
+	}
 	
-	public disconnectPeripheral(): void
+	public async disconnectSensor(): Promise<void>
 	{
 		if(this.connectedSensor)
-			this.connectedSensor.disconnect()
+			await this.connectedSensor.disconnect()
+
+		delete this.connectedSensor
+	}
+
+	public async connectToSensor(sensor: Sensor): Promise<void>
+	{
+		await sensor.connect()
+
+		try
+		{
+			if(this.connectedSensor)
+				await this.connectedSensor.disconnect()
+		}
+		catch(e)
+		{
+			console.log('ERROR', e)
+		}
+
+		this.connectedSensor = sensor
 	}
 }
 export class DefaultScannerStrategy extends ScannerStrategy implements iScannerStrategy
@@ -67,8 +93,6 @@ export class DefaultScannerStrategy extends ScannerStrategy implements iScannerS
 
 		await this.bluetooth.stopScanning()
 
-		this.connectedSensor = sensor
-		
 		return sensor
     }
 }
@@ -98,8 +122,8 @@ export class CalibrationScannerStrategy extends ScannerStrategy implements iScan
 		}
 
 		await this.bluetooth.stopScanning()
-		await sensor.connect()
-		this.connectedSensor = sensor
+
+		await this.connectToSensor(sensor)
 
 		return sensor
     }
@@ -133,7 +157,6 @@ export class PairingScannerStrategy extends ScannerStrategy implements iScannerS
 
 		await this.bluetooth.stopScanning()
 		await sensor.touch()
-		this.connectedSensor = sensor
         
         return sensor
     }

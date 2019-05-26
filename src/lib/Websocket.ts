@@ -101,6 +101,8 @@ export default class Websocket {
 
                 cueMessage.payload.address = connectionAddress
 
+                console.log(cueMessage)
+
                 const action = this.actions.get(cueMessage.action)
 
                 if(action) action(cueMessage.payload)
@@ -108,22 +110,25 @@ export default class Websocket {
         })
     }
 
-    public async send(payload: any, address: string): Promise<void>
+    public async send(message: CueWebsocketMessage, address: string): Promise<void>
     {
         return new Promise((resolve, reject) => {
             const connection: WebSocket.connection = this.connections.get(address)
             
             if(!connection) return reject()
 
-            connection.send(JSON.stringify(payload))
+            connection.send(JSON.stringify(message))
 
             resolve()
         })
     }
 
-    public on(action: WebsocketActions, cb: (paylod: {[key:string]:any}) => void)
+    public async on(action: WebsocketActions, cb: (paylod: {[key:string]:any}) => void): Promise<void>
     {
-        this.actions.set(action, cb)
+        return new Promise((resolve, reject) => {
+            this.actions.set(action, cb)
+
+        })
     }
 
     public getAdress() : { port: number, address: string }
@@ -156,14 +161,16 @@ export default class Websocket {
 }
 
 export enum WebsocketActions {
-    DISCONNECT_PERIPHERAL   = 'disconnect',
-    CALIBATION_MODE         = 'calibration',
-    LISTENING_MODE          = 'listen',
-    FORGET_SENSORS          = 'forget',
-    PAIRING_MODE            = 'pairing',
-    SYNC_SENSORS            = 'sync-sensors',
-    DEBUG                   = 'debug',
-    STOP                    = 'stop',
+    CALIBRATION_PROBE   = 'calibration-probe',
+    DISCONNECT_SENSOR   = 'disconnect',
+    CALIBRATION_MODE    = 'calibration',
+    CALIBRATION_END     = 'calibration-end',
+    LISTENING_MODE      = 'listen',
+    FORGET_SENSORS      = 'forget',
+    PAIRING_MODE        = 'pairing',
+    SYNC_SENSORS        = 'sync-sensors',
+    DEBUG               = 'debug',
+    STOP                = 'stop',
 }
 
 export interface CueWebsocketMessage {

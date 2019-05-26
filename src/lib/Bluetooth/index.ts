@@ -68,10 +68,15 @@ export default class Bluetooth {
 		if(action) action()
 	}
 
-	public disconnectPeripheral(): void
+	public getConnectedSensor()
+	{
+		return this.scannerStrategy.getConnectedSensor()
+	}
+
+	public disconnectSensor(): void
 	{
 		console.log('DISCONNECTING SENSOR FROM BLE')
-		this.scannerStrategy.disconnectPeripheral()
+		this.scannerStrategy.disconnectSensor()
 	}
 
 	public stopScanning(): Promise<void>

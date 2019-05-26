@@ -19,6 +19,8 @@ export default class BaseStation {
 
     private timers: Map<TIMER, NodeJS.Timeout> = new Map<TIMER, NodeJS.Timeout>()
 
+    private calibrationReadings: Array<Buffer> = []
+
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
         this.pubSub = pubsub
@@ -104,59 +106,70 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(WebsocketActions.CALIBATION_MODE, (payload) => {
+        this.websocket.on(WebsocketActions.CALIBRATION_MODE, (payload) => {
             
             console.log("CALIBRATIONS MODE activated")
-            
-            const sensorId =    payload.sensorId
-            const probeCount =  payload.count
-
 
             this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
-
-                const readings: Array<Buffer> = []
-
-                const timeBetweenProbes = 5000
 
                 try
                 {
                 	//flushing value by reading
                 	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
-                    console.log('INITIALIZING SOUND LEVEL PROBING')
-                    
                     this.websocket.send({
-                        sensor : sensorId,
-                        probe : 0,
+                        action  : WebsocketActions.CALIBRATION_PROBE,
+                        payload : {
+                            sensorId : sensor.getId()
+                        }
                     }, payload.address)
-
-                	for (let i = 0; i < probeCount; i++)
-                	{
-                        await delay(timeBetweenProbes)
-                        
-                        const reading = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
-
-                        this.websocket.send({
-                            sensor : sensorId,
-                            reading : reading.readUInt8(0),
-                            probe : i+1,
-                        }, payload.address)
-
-                        readings.push(reading)
-                    }
-                    
-                    readings.forEach((buffer: Buffer) => {
-                        console.log('READING', buffer.readUInt8(0))
-                    })
                 }
                 catch(e)
                 {
                 	console.log('ERROR', e)
                 }
-
-                await sensor.disconnect()
-                this.bluetooth.scan()
             })
+        })
+
+        this.websocket.on(WebsocketActions.CALIBRATION_PROBE, async (payload) => {
+
+            try
+            {
+                const sensor = this.bluetooth.getConnectedSensor()
+
+                await delay(5000)
+                            
+                const reading = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+
+                this.websocket.send({
+                    action  : WebsocketActions.CALIBRATION_PROBE,
+                    payload : {
+                        sensor  : sensor.getId(),
+                        reading : reading.readUInt8(0),
+                    }
+                }, payload.address)
+
+                this.calibrationReadings.push(reading)
+            }
+            catch(e)
+            {
+                console.log('ERROR', e)
+            }
+        })
+
+        this.websocket.on(WebsocketActions.CALIBRATION_END, async () => {
+
+            try
+            {
+                this.calibrationReadings = []
+                this.bluetooth.disconnectSensor()
+            }
+            catch(e)
+            {
+                console.log('ERROR', e)
+            }
+
+            this.bluetooth.scan()
         })
 
         this.websocket.on(WebsocketActions.SYNC_SENSORS, (payload: any) => {
@@ -164,11 +177,11 @@ export default class BaseStation {
             this.bluetooth.syncSensors(payload.sensors)
         })
 
-        this.websocket.on(WebsocketActions.LISTENING_MODE,          () => this.bluetooth.scan())
-        this.websocket.on(WebsocketActions.DISCONNECT_PERIPHERAL,   () => this.bluetooth.disconnectPeripheral())
-        this.websocket.on(WebsocketActions.FORGET_SENSORS,          () => this.bluetooth.forgetSensors())
-        this.websocket.on(WebsocketActions.DEBUG,                   () => this.bluetooth.toggleDebug())
-        this.websocket.on(WebsocketActions.STOP,                    () => this.bluetooth.stopScanning())
+        this.websocket.on(WebsocketActions.DISCONNECT_SENSOR,   () => this.bluetooth.disconnectSensor())
+        this.websocket.on(WebsocketActions.LISTENING_MODE,      () => this.bluetooth.scan())
+        this.websocket.on(WebsocketActions.FORGET_SENSORS,      () => this.bluetooth.forgetSensors())
+        this.websocket.on(WebsocketActions.DEBUG,               () => this.bluetooth.toggleDebug())
+        this.websocket.on(WebsocketActions.STOP,                () => this.bluetooth.stopScanning())
 
         this.websocket.onError(this.errorHandler.bind(this))
         this.pubSub.onError(this.errorHandler.bind(this))
