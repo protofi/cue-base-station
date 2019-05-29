@@ -101,7 +101,7 @@ export default class Websocket {
 
                 cueMessage.payload.address = connectionAddress
 
-                console.log(cueMessage)
+                console.log('WEBSOCKET MESSAGE', cueMessage)
 
                 const action = this.actions.get(cueMessage.action)
 
@@ -166,6 +166,7 @@ export enum WebsocketActions {
     CALIBRATION_MODE    = 'calibration',
     CALIBRATION_END     = 'calibration-end',
     LISTENING_MODE      = 'listen',
+    CONNECT             = 'connect',
     FORGET_SENSORS      = 'forget',
     PAIRING_MODE        = 'pairing',
     SYNC_SENSORS        = 'sync-sensors',

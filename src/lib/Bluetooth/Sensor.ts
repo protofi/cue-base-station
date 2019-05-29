@@ -20,7 +20,24 @@ export enum STATE {
 	DISCONNECTED 	= 'disconnected',
 	DISCONNECTING 	= 'disconnecting',
 }
-export default class Sensor {
+
+export interface Sensor {
+	touch(): Promise<void>
+    connect(): Promise<void>
+    disconnect(): Promise<void>
+	fetchServicesAndCharacteristics(): Promise<void>
+	getCharacteristic(uuid: CHAR): Promise<Noble.Characteristic>
+	getCharacteristics(): Map<string, Noble.Characteristic>
+	getServiceData(): { uuid: string; data: Buffer; }[]
+	wasTriggerBy(trigger: TRIGGER): boolean
+	readCharacteristic(uuid: CHAR): Promise<Buffer>
+	writeValue(value: number, uuid: CHAR): Promise<void>
+	getRssi(): number
+	getId(): string
+	getTrigger(): string
+	getAdvertisment(): Noble.Advertisement
+}
+export default class SensorImpl implements Sensor {
 	
     private id				: string
 	private rssi			: number
@@ -144,6 +161,27 @@ export default class Sensor {
 		})
 	}
 
+	public async fetchAllServicesAndCharacteristics(): Promise<void>
+	{
+		return new Promise((resolve, reject) => {
+
+			console.log('FECTHING CHARACTERISTIC')
+
+			this.peripheral.discoverSomeServicesAndCharacteristics([], [], (
+				error: string,
+				services: Noble.Service[],
+				characteristics: Noble.Characteristic[]
+			) => {
+				if(error) return reject(error)
+				
+				console.log('SERVICE', services)
+				console.log('CHARACTERISTICS', characteristics)
+
+				resolve()
+			})
+		})
+	}
+
 	public getCharacteristics(): Map<string, Noble.Characteristic>
 	{
 		return this.characteristics
@@ -164,6 +202,11 @@ export default class Sensor {
 		if(this.peripheral.state == STATE.DISCONNECTED) this.onDisconnect()
 
 		console.log('SENSOR STATE CHANGED', `(${state})`)		
+	}
+
+	public getAdvertisment(): Noble.Advertisement
+	{
+		return this.peripheral.advertisement
 	}
 
 	public getServiceData(): { uuid: string; data: Buffer; }[]
@@ -224,12 +267,12 @@ export default class Sensor {
 		})
 	}
 
-	public getRssi()
+	public getRssi(): number
 	{
 		return this.rssi
 	}
 
-	public getId()
+	public getId(): string
 	{
 		return this.id	
 	}

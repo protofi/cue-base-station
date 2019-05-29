@@ -1,9 +1,8 @@
 import * as Noble from 'noble'
-import Sensor, { TRIGGER, CHAR } from "./Sensor";
-import Bluetooth, { CUE_SENSOR_NAME } from '.';
-import delay from '../../util/delay';
+import SensorImpl, { Sensor, TRIGGER } from "./Sensor";
+import { Bluetooth, CUE_SENSOR_NAME } from '.';
 
-export default interface iScannerStrategy
+export default interface ScannerStrategy
 {
 	onDiscover(peripheral: Noble.Peripheral): Promise<Sensor>
 	disconnectSensor(): void
@@ -11,7 +10,7 @@ export default interface iScannerStrategy
 	connectToSensor(sensor: Sensor): Promise<void>
 }
 
-class ScannerStrategy
+abstract class AbstractScannerStrategy
 {
 	protected bluetooth: Bluetooth
 	protected connectedSensor: Sensor
@@ -31,7 +30,7 @@ class ScannerStrategy
 
 		if(localName != CUE_SENSOR_NAME) return null
 
-        return new Sensor(peripheral)
+        return new SensorImpl(peripheral)
 	}
 
 	public getConnectedSensor(): Sensor
@@ -64,7 +63,7 @@ class ScannerStrategy
 		this.connectedSensor = sensor
 	}
 }
-export class DefaultScannerStrategy extends ScannerStrategy implements iScannerStrategy
+export class DefaultScannerStrategy extends AbstractScannerStrategy implements ScannerStrategy
 {
     constructor(bluetooth: Bluetooth) { super(bluetooth) }
 
@@ -97,7 +96,7 @@ export class DefaultScannerStrategy extends ScannerStrategy implements iScannerS
     }
 }
 
-export class CalibrationScannerStrategy extends ScannerStrategy implements iScannerStrategy
+export class CalibrationScannerStrategy extends AbstractScannerStrategy implements ScannerStrategy
 {
     constructor(bluetooth: Bluetooth) { super(bluetooth) }
 
@@ -129,7 +128,7 @@ export class CalibrationScannerStrategy extends ScannerStrategy implements iScan
     }
 }
 
-export class PairingScannerStrategy extends ScannerStrategy implements iScannerStrategy
+export class PairingScannerStrategy extends AbstractScannerStrategy implements ScannerStrategy
 {
     constructor(bluetooth: Bluetooth) { super(bluetooth) }
 

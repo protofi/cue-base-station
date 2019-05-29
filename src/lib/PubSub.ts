@@ -39,7 +39,9 @@ export default class PubSub {
     private connectedCallback: Function = () => {}
     private errorCallback: (error: Error) => void = console.log
 
-    constructor() {}
+    constructor(privateKeyFile?: string) {
+        this.privateKeyFile = (privateKeyFile) ? privateKeyFile : this.privateKeyFile
+    }
 
     private mountHooks()
     {

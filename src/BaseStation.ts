@@ -1,15 +1,15 @@
 import PubSub, { Topics } from "./lib/PubSub";
 import Websocket, { WebsocketActions } from "./lib/Websocket";
-import Bluetooth from "./lib/Bluetooth";
-import Sensor, { CHAR } from "./lib/Bluetooth/Sensor";
+import { Bluetooth } from "./lib/Bluetooth";
+import { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
 import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
 import delay from "./util/delay";
 
 enum TIMER {
     PAIRING = 'pairing'
 }
-
 export default class BaseStation {
+    
     private pubSub: PubSub
     private websocket: Websocket
     private bluetooth: Bluetooth
@@ -68,7 +68,7 @@ export default class BaseStation {
             })
 
             await sensor.touch()
-    
+
             this.pubSub.publish(Topics.HEARTBEAT, {
                 id              : sensor.getId(),
                 signal_strength : sensor.getRssi(),
@@ -76,6 +76,15 @@ export default class BaseStation {
             })
 
 			this.bluetooth.scan()
+        })
+
+        this.websocket.on(WebsocketActions.CONNECT, () => {
+            
+            this.bluetooth.scan(null, async (sensor: Sensor) => {
+                
+                console.log('ADVERTISMENT', sensor.getAdvertisment())
+                
+            })
         })
 
         this.websocket.on(WebsocketActions.PAIRING_MODE, () => {
@@ -118,7 +127,7 @@ export default class BaseStation {
                 	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
 
                     this.websocket.send({
-                        action  : WebsocketActions.CALIBRATION_PROBE,
+                        action  : WebsocketActions.CALIBRATION_MODE,
                         payload : {
                             sensorId : sensor.getId()
                         }

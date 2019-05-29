@@ -1,6 +1,6 @@
 import * as Noble from 'noble'
-import Sensor, { TRIGGER } from './Sensor'
-import iScannerStrategy, { DefaultScannerStrategy } from './ScannerStrategy';
+import { Sensor, TRIGGER } from './Sensor'
+import ScannerStrategy, { DefaultScannerStrategy } from './ScannerStrategy';
 
 enum STATE {
 	POWER_ON = 'poweredOn'
@@ -8,11 +8,22 @@ enum STATE {
 
 export const CUE_SENSOR_NAME = 'home-cue'
 
-export interface OldScannerStrategy {
-	(peripheral: Noble.Peripheral) : Promise<Sensor>
+export interface Bluetooth {
+	debug: boolean
+    knows(sensor: Sensor): boolean
+	pairSensor(sensor: Sensor): void
+	getConnectedSensor(): Sensor
+	disconnectSensor(): void
+	stopScanning(): Promise<void>
+	scan(scannerStrategy?: ScannerStrategy, deviceDiscoveredCallback?: (sensor: Sensor) => void, scanFilter?: Array<string>): Promise<void>
+	forgetSensors(): void
+	poweredOn(cb: () => void): void
+	onAudioTrigger(cb: (sensor: Sensor) => void): void
+	syncSensors(sensors: Array<string>): void
+	toggleDebug(): void
 }
 
-export default class Bluetooth {
+export default class BluetoothImpl implements Bluetooth {
 
 	public debug = false
 
@@ -23,8 +34,8 @@ export default class Bluetooth {
 	private audioTriggerCallback: 		(sensor: Sensor) => void = null
 	private deviceDiscoveredCallback: 	(sensor: Sensor) => void = null
 
-	private defaultDiscoverStrategy: iScannerStrategy 	= new DefaultScannerStrategy(this)
-	private scannerStrategy: iScannerStrategy 			= this.defaultDiscoverStrategy
+	private defaultDiscoverStrategy: ScannerStrategy 	= new DefaultScannerStrategy(this)
+	private scannerStrategy: ScannerStrategy 			= this.defaultDiscoverStrategy
 
 	private defaultDiscoverCallback = async (sensor: Sensor): Promise<void> =>
 	{
@@ -88,7 +99,7 @@ export default class Bluetooth {
 		})
 	}
 
-	public scan(scannerStrategy?: iScannerStrategy, deviceDiscoveredCallback?: (sensor: Sensor) => void, scanFilter: Array<string> = [])
+	public async scan(scannerStrategy?: ScannerStrategy, deviceDiscoveredCallback?: (sensor: Sensor) => void, scanFilter: Array<string> = []) : Promise<void>
 	{
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultDiscoverStrategy
 		this.deviceDiscoveredCallback = (deviceDiscoveredCallback) ? deviceDiscoveredCallback : this.defaultDiscoverCallback
@@ -125,7 +136,7 @@ export default class Bluetooth {
 		this.knownSensors.clear()
 	}
 
-	public poweredOn(cb: () => void): any
+	public poweredOn(cb: () => void): void
 	{
 		this.stateChangeActions.set(STATE.POWER_ON, cb)
 	}
