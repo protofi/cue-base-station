@@ -119,6 +119,8 @@ export default class BaseStation {
             
             console.log("CALIBRATIONS MODE activated")
 
+            console.log('SENSOR ID', payload.sensorId)
+
             this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
 
                 try
@@ -137,7 +139,7 @@ export default class BaseStation {
                 {
                 	console.log('ERROR', e)
                 }
-            }, ['790acc03'])
+            }, [payload.sensorId])
         })
 
         this.websocket.on(WebsocketActions.CALIBRATION_PROBE, async (payload) => {

@@ -58,8 +58,9 @@ export default class BluetoothImpl implements Bluetooth
 			console.log('BLUETOOTH =============================> SCANNING STOPPED')
 		})
 		
-		this.knownSensors.add('00a050cf66d7')
-		this.knownSensors.add('00a050596aa0')
+		this.knownSensors.add('00a050cf66d7') //REMOVE
+		this.knownSensors.add('00a050596aa0') //REMOVE
+		this.knownSensors.add('790acc03') //REMOVE
 	}
 
 	public knows(sensor: Sensor): boolean
