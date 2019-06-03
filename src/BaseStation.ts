@@ -137,7 +137,7 @@ export default class BaseStation {
                 {
                 	console.log('ERROR', e)
                 }
-            })
+            }, ['790acc03'])
         })
 
         this.websocket.on(WebsocketActions.CALIBRATION_PROBE, async (payload) => {

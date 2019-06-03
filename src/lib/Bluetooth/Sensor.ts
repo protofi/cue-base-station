@@ -274,6 +274,6 @@ export default class SensorImpl implements Sensor {
 
 	public getId(): string
 	{
-		return this.id	
+		return this.getAdvertisment().serviceData[0].uuid
 	}
 }

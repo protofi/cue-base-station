@@ -23,8 +23,8 @@ export interface Bluetooth {
 	toggleDebug(): void
 }
 
-export default class BluetoothImpl implements Bluetooth {
-
+export default class BluetoothImpl implements Bluetooth
+{
 	public debug = false
 
 	private scanning: boolean = false
@@ -75,6 +75,7 @@ export default class BluetoothImpl implements Bluetooth {
 	private onStateChange(state: string): void
 	{
 		console.log('STATE CHANGE:', state)
+		
 		const action = this.stateChangeActions.get(state)
 		if(action) action()
 	}
@@ -110,10 +111,9 @@ export default class BluetoothImpl implements Bluetooth {
 		console.log('|===> CALLBACK:', !(!deviceDiscoveredCallback))
 
 		if(this.scanning)
-		{
-			console.log('BLUETOOTH =============================> SCANNING CONTINUED')
-			return
-		}
+			await this.stopScanning()
+
+		console.log('LOOKING FOR', scanFilter)
 
 		Noble.startScanning(scanFilter, true)
 		this.scanning = true
