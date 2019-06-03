@@ -18,10 +18,10 @@ export interface Bluetooth
 	disconnectSensor(): void
 	stopScanning(): Promise<void>
 	scan(scannerStrategy?: ScannerStrategy, deviceDiscoveredCallback?: (sensor: Sensor) => void, scanFilter?: Array<string>): Promise<void>
-	forgetSensors(): void
+	forgetSensors(): Promise<void>
 	poweredOn(cb: () => void): void
 	onAudioTrigger(cb: (sensor: Sensor) => void): void
-	syncSensors(sensors: Array<string>): void
+	syncSensors(sensors: Array<string>): Promise<void>
 	toggleDebug(): void
 }
 
@@ -62,7 +62,7 @@ export default class BluetoothImpl implements Bluetooth
 		
 		const sensorIds = fs.readFileSync('./data/known-sensors.json', { encoding : 'utf8'})
 		
-		console.log('SENSORS', sensorIds, JSON.parse(sensorIds))
+		console.log('KNOWN SENSORS', sensorIds)
 
 		this.knownSensors = (sensorIds) ? new Set(Array.from(JSON.parse(sensorIds))) : new Set()
 	}
@@ -76,13 +76,18 @@ export default class BluetoothImpl implements Bluetooth
 	{
 		this.knownSensors.add(sensor.getId())
 
-		const sensorIds = Array.from(this.knownSensors)
+		return this.persistKnownSensors()
+	}
 
-		console.log('KNOWN SENSORS ARRAY', JSON.stringify(sensorIds))
+	private async persistKnownSensors(): Promise<void>
+	{
+		const sensorIds = JSON.stringify(Array.from(this.knownSensors))
+
+		console.log('KNOWN SENSORS ARRAY', sensorIds)
 
 		return new Promise((resolve, reject) => {
 			fs.writeFile('./data/known-sensors.json',
-				JSON.stringify(sensorIds),
+				sensorIds,
 				error => {
 					if (error) return reject('SENSOR COULD NOT BE REMEMBERED: \n' + error)
 
@@ -157,9 +162,10 @@ export default class BluetoothImpl implements Bluetooth
 			this.deviceDiscoveredCallback(sensor)
 	}
 
-	public forgetSensors()
+	public async forgetSensors(): Promise<void>
 	{
 		this.knownSensors.clear()
+		return this.persistKnownSensors()
 	}
 
 	public poweredOn(cb: () => void): void
@@ -172,13 +178,15 @@ export default class BluetoothImpl implements Bluetooth
 		this.audioTriggerCallback = cb
 	}
 
-	public syncSensors(sensors: Array<string>): void
+	public async syncSensors(sensors: Array<string>): Promise<void>
 	{
 		this.knownSensors.clear()
 
 		sensors.forEach(sensorId => {
 			this.knownSensors.add(sensorId)
 		})
+
+		return this.persistKnownSensors()
 	}
 
 	public toggleDebug(): void

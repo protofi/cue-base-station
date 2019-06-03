@@ -46,7 +46,7 @@ export default class StubBluetooth implements Bluetooth
             deviceDiscoveredCallback(new SensorStub('00a050596aa0'))
     }
 
-    forgetSensors(): void {}
+    forgetSensors(): Promise<void> { return }
 
     poweredOn(cb: () => void): void
     {
@@ -55,7 +55,7 @@ export default class StubBluetooth implements Bluetooth
 
     onAudioTrigger(cb: (sensor: Sensor) => void): void {}
 
-    syncSensors(sensors: string[]): void {}
+    syncSensors(sensors: Array<string>): Promise<void> { return }
 
     toggleDebug(): void {}
 }
