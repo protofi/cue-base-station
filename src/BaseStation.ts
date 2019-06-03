@@ -1,9 +1,10 @@
-import PubSub, { Topics } from "./lib/PubSub";
-import Websocket, { WebsocketActions } from "./lib/Websocket";
-import { Bluetooth } from "./lib/Bluetooth";
-import { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
 import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
+import Websocket, { WebsocketActions } from "./lib/Websocket";
+import SensorImpl, { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
+import PubSub, { Topics } from "./lib/PubSub";
+import { Bluetooth } from "./lib/Bluetooth";
 import delay from "./util/delay";
+import { mean } from 'lodash'
 
 enum TIMER {
     PAIRING = 'pairing'
@@ -82,8 +83,15 @@ export default class BaseStation {
             
             this.bluetooth.scan(null, async (sensor: Sensor) => {
                 
-                console.log('ADVERTISMENT', sensor.getAdvertisment())
+                await sensor.connect()
                 
+                const threshold = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
+                
+                await sensor.writeValue(100, CHAR.THRESHOLD_LEVEL)
+
+                const threshold2 = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
+
+                console.log('TRHESHOLDS', threshold, threshold2)
             })
         })
 
@@ -126,7 +134,7 @@ export default class BaseStation {
                 try
                 {
                 	//flushing value by reading
-                	await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+                	await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
 
                     this.websocket.send({
                         action  : WebsocketActions.CALIBRATION_MODE,
@@ -150,7 +158,7 @@ export default class BaseStation {
 
                 await delay(5000)
                             
-                const reading = await sensor.readCharacteristic(CHAR.RSSI_LEVEL)
+                const reading = await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
 
                 this.websocket.send({
                     action  : WebsocketActions.CALIBRATION_PROBE,
@@ -172,8 +180,15 @@ export default class BaseStation {
 
             try
             {
-                this.calibrationReadings = []
+                const avgReading = mean(this.calibrationReadings)
+
+                const sensor = this.bluetooth.getConnectedSensor()
+    
+                sensor.writeValue(avgReading, CHAR.THRESHOLD_LEVEL)
+                
                 this.bluetooth.disconnectSensor()
+
+                this.calibrationReadings = []
             }
             catch(e)
             {

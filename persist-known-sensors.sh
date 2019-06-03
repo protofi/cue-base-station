@@ -1,0 +1,1 @@
+cp -r ./data/known-sensors.json /data/known-sensors.json

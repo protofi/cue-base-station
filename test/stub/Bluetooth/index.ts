@@ -6,6 +6,7 @@ import delay from "../../../src/util/delay";
 
 export default class StubBluetooth implements Bluetooth 
 {
+
     public debug = false
     
     constructor() {}
@@ -14,8 +15,11 @@ export default class StubBluetooth implements Bluetooth
     {
         return false
     }
-
-    pairSensor(sensor: Sensor): void {}
+ 
+    remember(sensor: Sensor): Promise<void>
+    {
+        throw new Error("Method not implemented.")
+    }
 
     getConnectedSensor(): Sensor
     {

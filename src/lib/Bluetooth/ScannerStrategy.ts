@@ -152,7 +152,7 @@ export class PairingScannerStrategy extends AbstractScannerStrategy implements S
 			return null
 		}
 
-        this.bluetooth.pairSensor(sensor)
+        await this.bluetooth.remember(sensor)
 
 		await this.bluetooth.stopScanning()
 		await sensor.touch()

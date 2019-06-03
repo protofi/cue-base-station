@@ -1,5 +1,6 @@
 import * as Noble from 'noble'
-import { Sensor, TRIGGER } from './Sensor'
+import * as fs from 'fs'
+import { Sensor } from './Sensor'
 import ScannerStrategy, { DefaultScannerStrategy } from './ScannerStrategy';
 
 enum STATE {
@@ -8,10 +9,11 @@ enum STATE {
 
 export const CUE_SENSOR_NAME = 'home-cue'
 
-export interface Bluetooth {
+export interface Bluetooth
+{
 	debug: boolean
     knows(sensor: Sensor): boolean
-	pairSensor(sensor: Sensor): void
+	remember(sensor: Sensor): Promise<void>
 	getConnectedSensor(): Sensor
 	disconnectSensor(): void
 	stopScanning(): Promise<void>
@@ -25,11 +27,11 @@ export interface Bluetooth {
 
 export default class BluetoothImpl implements Bluetooth
 {
-	public debug = false
+	public debug: boolean = false
 
 	private scanning: boolean = false
 
-	private knownSensors: Set<string> = new Set()
+	private knownSensors: Set<string>
 
 	private audioTriggerCallback: 		(sensor: Sensor) => void = null
 	private deviceDiscoveredCallback: 	(sensor: Sensor) => void = null
@@ -58,9 +60,11 @@ export default class BluetoothImpl implements Bluetooth
 			console.log('BLUETOOTH =============================> SCANNING STOPPED')
 		})
 		
-		this.knownSensors.add('00a050cf66d7') //REMOVE
-		this.knownSensors.add('00a050596aa0') //REMOVE
-		this.knownSensors.add('790acc03') //REMOVE
+		const sensorIds = fs.readFileSync('./data/known-sensors.json', { encoding : 'utf8'})
+		
+		console.log('SENSORS', sensorIds, JSON.parse(sensorIds))
+
+		this.knownSensors = (sensorIds) ? new Set(Array.from(JSON.parse(sensorIds))) : new Set()
 	}
 
 	public knows(sensor: Sensor): boolean
@@ -68,9 +72,30 @@ export default class BluetoothImpl implements Bluetooth
 		return this.knownSensors.has(sensor.getId())
 	}
 
-	public pairSensor(sensor: Sensor): void
+	public async remember(sensor: Sensor): Promise<void>
 	{
 		this.knownSensors.add(sensor.getId())
+
+		const sensorIds = Array.from(this.knownSensors)
+
+		console.log('KNOWN SENSORS ARRAY', JSON.stringify(sensorIds))
+
+		return new Promise((resolve, reject) => {
+			fs.writeFile('./data/known-sensors.json',
+				JSON.stringify(sensorIds),
+				error => {
+					if (error) return reject('SENSOR COULD NOT BE REMEMBERED: \n' + error)
+
+					const exec = require('child_process').exec
+
+					exec('sh ./persist-known-sensors.sh', (error: string) => {
+						if (error) return reject('SENSOR COULD NOT BE REMEMBERED: \n' + error)
+
+						resolve()
+					})
+				}
+			)
+		})
 	}
 
 	private onStateChange(state: string): void

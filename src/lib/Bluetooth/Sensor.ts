@@ -254,16 +254,16 @@ export default class SensorImpl implements Sensor {
 	{
 		return new Promise(async (resolve, reject) => {
 
-			// const characteristic = await this.getCharacteristic(uuid)
-			// if(!characteristic) return reject('No characteristic with the specified UUID found')
+			const characteristic = await this.getCharacteristic(uuid)
+			if(!characteristic) return reject('No characteristic with the specified UUID found')
 			
-			// const buffer = Buffer.from([value])
+			const buffer = Buffer.from([value])
 
-			// characteristic.write(buffer, false, (error) => {
-			// 	if(error) return reject(error)
+			characteristic.write(buffer, false, (error) => {
+				if(error) return reject(error)
 
 				resolve()
-			// })
+			})
 		})
 	}
 

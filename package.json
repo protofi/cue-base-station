@@ -45,6 +45,7 @@
   "homepage": "https://github.com/TobiasEmil/CUE-Base-Station#readme",
   "dependencies": {
     "@types/jsonwebtoken": "^8.3.2",
+    "@types/lodash": "^4.14.133",
     "@types/noble": "0.0.39",
     "@types/node": "^11.11.0",
     "@types/socket.io": "^2.1.2",
@@ -53,6 +54,7 @@
     "bluetooth-hci-socket": "^0.5.1",
     "gulp-cli": "^2.0.1",
     "jsonwebtoken": "^8.5.0",
+    "lodash": "^4.17.11",
     "mqtt": "^2.18.8",
     "noble": "^1.9.1",
     "typescript": "^3.3.3333",
