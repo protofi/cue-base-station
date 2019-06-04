@@ -33,25 +33,24 @@ export default class BaseStation
         this.mountHooks()
     }
 
-    getId(): string
+    public getId(): string
     {
         return `${this.deviceUUIDPrefix}${this.deviceUUID}`
     }
 
-    initialize(): void
+    public async initialize(): Promise<void>
     {
-        this.pubSub.connect(() => {
+        await this.pubSub.connect()
 
-            this.websocket.connect(() => {
+        this.websocket.connect(() => {
 
-                console.log('WEBSOCKET CONNECTED', this.websocket.getAdress()) 
+            console.log('WEBSOCKET CONNECTED', this.websocket.getAdress()) 
 
-                const address = this.websocket.getAdress()
-    
-                this.pubSub.publish(Topics.UPDATE_WEBSOCKET, {
-                    base_station_port       : address.port,
-                    base_station_address    : address.address
-                })
+            const address = this.websocket.getAdress()
+
+            this.pubSub.publish(Topics.UPDATE_WEBSOCKET, {
+                base_station_port       : address.port,
+                base_station_address    : address.address
             })
         })
 

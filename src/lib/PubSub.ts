@@ -36,7 +36,10 @@ export default class PubSub {
     private expTime: number
     private client: mqtt.MqttClient
 
-    private connectedCallback: Function = () => {}
+
+	private connectedPromiseResolution:     (value?: void | PromiseLike<void>) => void
+	private connectedPromiseRejection:      (reason?: any) => void
+
     private errorCallback: (error: Error) => void = console.log
 
     constructor(privateKeyFile?: string) {
@@ -59,7 +62,7 @@ export default class PubSub {
             if(error.message.includes(Errors.BAD_USER_PASS) || error.message.includes(Errors.BAD_USER_PASS))
             {
                 console.log('RE-AUTH')
-                this.connect(this.connectedCallback)
+                this.connect()
                 return
             }
 
@@ -112,30 +115,35 @@ export default class PubSub {
         console.log('RE-AUTH')
 
         //reconnect
-        this.connect(this.connectedCallback)
+        this.connect()
     }
 
-    public connect(cb: Function) : void
+    public connect() : Promise<void>
     {
-        this.connectedCallback = cb
+        // this.connectedCallback = cb
 
-        const mqttClientId = `projects/${this.projectId}/locations/${this.cloudRegion}/registries/${this.registryId}/devices/${this.deviceUUID}`
+        return new Promise((resolve, reject) => {
+            this.connectedPromiseResolution = resolve
+            this.connectedPromiseRejection = reject
 
-        let connectionArgs = {
-            host: this.mqttBridgeHostname,
-            port: this.mqttBridgePort,
-            clientId: mqttClientId,
-            username: 'unused',
-            password: this.createJwt(this.projectId, this.privateKeyFile, this.algorithm),
-            protocol: 'mqtts',
-            secureProtocol: 'TLSv1_2_method'
-        }
+            const mqttClientId = `projects/${this.projectId}/locations/${this.cloudRegion}/registries/${this.registryId}/devices/${this.deviceUUID}`
 
-        if(this.client) this.client.end() //close previous connection if it exist
-
-        this.client = mqtt.connect(connectionArgs)
-
-        this.mountHooks()
+            let connectionArgs = {
+                host: this.mqttBridgeHostname,
+                port: this.mqttBridgePort,
+                clientId: mqttClientId,
+                username: 'unused',
+                password: this.createJwt(this.projectId, this.privateKeyFile, this.algorithm),
+                protocol: 'mqtts',
+                secureProtocol: 'TLSv1_2_method'
+            }
+    
+            if(this.client) this.client.end() //close previous connection if it exist
+    
+            this.client = mqtt.connect(connectionArgs)
+    
+            this.mountHooks()
+        })
     }
 
     private connected(success: any)
@@ -143,10 +151,11 @@ export default class PubSub {
         if (!success)
         {
             console.log('Client not connected...')
-            return
+            return this.connectedPromiseRejection()
         }
 
-        this.connectedCallback()
+        this.connectedPromiseResolution()
+        // this.connectedCallback()
     }
 
     public publish(topic: string, payload: {} = {}): Promise<void>
