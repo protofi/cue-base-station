@@ -40,22 +40,18 @@ export default class BaseStation
 
     public async initialize(): Promise<void>
     {
-        await this.pubSub.connect()
-
-        this.websocket.connect(() => {
-
-            console.log('WEBSOCKET CONNECTED', this.websocket.getAdress()) 
-
-            const address = this.websocket.getAdress()
-
-            this.pubSub.publish(Topics.UPDATE_WEBSOCKET, {
-                base_station_port       : address.port,
-                base_station_address    : address.address
-            })
-        })
-
         this.bluetooth.poweredOn(() => {
             this.bluetooth.scan()
+        })
+
+        await this.pubSub.connect()
+        await this.websocket.connect()
+
+        const { address, port } = this.websocket.getAdress()
+
+        this.pubSub.publish(Topics.UPDATE_WEBSOCKET, {
+            base_station_port    : port,
+            base_station_address : address
         })
     }
 

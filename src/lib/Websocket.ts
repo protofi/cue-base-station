@@ -19,27 +19,33 @@ export default class Websocket {
 
     private actions: Map<WebsocketActions, (payload?:{}) => void> = new Map()
 
+    private connectedPromiseResolution:     (value?: void | PromiseLike<void>) => void
+	private connectedPromiseRejection:      (reason?: any) => void
+
     constructor () {}
 
-    public connect(cb: () => void) : void
+    public connect() : Promise<void>
     {
-        this.connectedCallback = cb
+        return new Promise((resolve, reject) => {
+            this.connectedPromiseResolution = resolve
+            this.connectedPromiseRejection  = reject
 
-        if(this.server) this.server.close()
+            if(this.server) this.server.close()
 
-        this.server = http.createServer((req, res) => {
-            res.write('Hello')
-            res.end()
+            this.server = http.createServer((req, res) => {
+                res.write('Hello')
+                res.end()
+            })
+    
+            this.socket = new WebSocket.server({
+                httpServer: this.server,
+                autoAcceptConnections: false
+            })
+    
+            this.mountHooks()
+    
+            this.server.listen(this.port)
         })
-
-        this.socket = new WebSocket.server({
-            httpServer: this.server,
-            autoAcceptConnections: false
-        })
-
-        this.mountHooks()
-
-        this.server.listen(this.port)
     }
 
     private reconnect(error: Error): void
@@ -48,12 +54,17 @@ export default class Websocket {
 
         if(this.connectionAttempCount > this.maxConnectionAttempts)
         {
-            this.errorCallback(error)
-            return
+            return this.connectedPromiseRejection(error)
         }
 
         this.port++
         this.server.listen(this.port)
+    }
+
+    public connected(): void 
+    {
+        this.connectedPromiseResolution()
+        console.log('WEBSOCKET CONNECTED', this.getAdress()) 
     }
 
     private mountHooks(): void 
@@ -67,8 +78,7 @@ export default class Websocket {
             if(!error.message.includes('EADDRINUSE'))
             {
                 console.log('ERROR WEBSOCKET')
-                this.errorCallback(error)
-                return
+                return this.connectedPromiseRejection(error)
             }
 
             this.reconnect(error)
@@ -147,11 +157,6 @@ export default class Websocket {
             port    : this.port,
             address : chosenAddress.address
         }
-    }
-
-    public connected(): void 
-    {
-        this.connectedCallback()
     }
 
     onError(cb: (error: Error) => void): any {
