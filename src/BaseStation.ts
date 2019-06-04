@@ -79,24 +79,6 @@ export default class BaseStation
 			this.bluetooth.scan()
         })
 
-        this.websocket.on(WSActions.CONNECT, () => {
-            
-            this.bluetooth.scan(null, async (sensor: Sensor) => {
-                
-                await sensor.connect()
-
-                const threshold = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
-                
-                await sensor.writeValue(100, CHAR.THRESHOLD_LEVEL)
-
-                const threshold2 = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
-
-                console.log('TRHESHOLDS', threshold.readUInt8(0), threshold2.readUInt8(0))
-
-                await sensor.disconnect()
-            })
-        })
-
         this.websocket.on(WSActions.PAIRING_MODE, () => {
             
             console.log("PAIRING MODE activated")
