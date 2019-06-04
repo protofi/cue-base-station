@@ -137,10 +137,9 @@ export default class BluetoothImpl implements Bluetooth
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultDiscoverStrategy
 		this.deviceDiscoveredCallback = (deviceDiscoveredCallback) ? deviceDiscoveredCallback : this.defaultDiscoverCallback
 
-		console.log('SCAN INITIALIZED')
-
-		console.log('|===> STRATEGY:', this.scannerStrategy.constructor.name)
-		console.log('|===> CALLBACK:', !(!deviceDiscoveredCallback))
+		console.log('SCAN INITIALIZED', '\n',
+					'|===> STRATEGY:', this.scannerStrategy.constructor.name, '\n',
+					'|===> CALLBACK:', !(!deviceDiscoveredCallback))
 
 		if(this.scanning)
 			await this.stopScanning()

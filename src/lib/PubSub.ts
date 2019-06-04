@@ -36,7 +36,6 @@ export default class PubSub {
     private expTime: number
     private client: mqtt.MqttClient
 
-
 	private connectedPromiseResolution:     (value?: void | PromiseLike<void>) => void
 	private connectedPromiseRejection:      (reason?: any) => void
 
@@ -49,12 +48,12 @@ export default class PubSub {
     private mountHooks()
     {
         this.client.on('connect', (success: any) => {
-            console.log('PUB SUB CONNECTED')
+            console.log('PUBSUB CONNECTED')
             this.connected(success)
         })
 
         this.client.on('close', () => {
-            console.log('PUB SUB CLOSED')
+            console.log('PUBSUB CLOSED')
         })
 
         this.client.on('error', (error: Error) => {
@@ -66,16 +65,9 @@ export default class PubSub {
                 return
             }
 
+            this.connectedPromiseRejection(error)
             this.errorCallback(error)
         })
-
-        // this.client.on('packetsend', message => {
-        //     console.log('packetsend', message.cmd, message.messageId)
-        // })
-
-        // this.client.on('packetreceive', message => {
-        //     console.log('packetreceive', message.cmd, message.messageId)
-        // })
 
         // this.client.on('message', (topic, message: string, packet) => {
         //     console.log('message received: ', Buffer.from(message, 'base64').toString('ascii'))
@@ -83,7 +75,7 @@ export default class PubSub {
     }
 
     // Create a Cloud IoT Core JWT for the given project id, signed with the given private key.
-    private createJwt(projectId: string, privateKeyFile: string, algorithm: string)
+    private createJwt(projectId: string, privateKeyFile: string, algorithm: string): string
     {
         // Create a JWT to authenticate this device. The device will be disconnected
         // after the token expires, and will have to reconnect with a new token. The
@@ -106,7 +98,7 @@ export default class PubSub {
         this.deviceUUID = deviceUUID
     }
 
-    private checkAuth()
+    private checkAuth() : void
     {
         let secsFromIssue = parseInt(String(Date.now() / 1000)) - this.iatTime;
 
@@ -120,9 +112,8 @@ export default class PubSub {
 
     public connect() : Promise<void>
     {
-        // this.connectedCallback = cb
-
         return new Promise((resolve, reject) => {
+
             this.connectedPromiseResolution = resolve
             this.connectedPromiseRejection = reject
 
@@ -155,7 +146,6 @@ export default class PubSub {
         }
 
         this.connectedPromiseResolution()
-        // this.connectedCallback()
     }
 
     public publish(topic: string, payload: {} = {}): Promise<void>

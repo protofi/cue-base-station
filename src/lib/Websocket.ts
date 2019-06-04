@@ -13,8 +13,7 @@ export default class Websocket {
 
     private maxConnectionAttempts = 10
     private connectionAttempCount = 0
-    
-    private connectedCallback: () => void = () => console.log('CONNECTED', this.port)
+   
     private errorCallback: (error: Error) => void = console.log
 
     private actions: Map<WebsocketActions, (payload?:{}) => void> = new Map()
@@ -77,7 +76,8 @@ export default class Websocket {
 
             if(!error.message.includes('EADDRINUSE'))
             {
-                console.log('ERROR WEBSOCKET')
+                console.log('WEBSOCKET ERROR')
+                this.errorCallback(error)
                 return this.connectedPromiseRejection(error)
             }
 
@@ -129,15 +129,15 @@ export default class Websocket {
 
             connection.send(JSON.stringify(message))
 
+            console.log('WEBSOCKET MESSAGE SEND', message)
+
             resolve()
         })
     }
 
-    public async on(action: WebsocketActions, cb: (paylod: {[key:string]:any}) => void): Promise<void>
+    public on(action: WebsocketActions, cb: (paylod: {[key:string]:any}) => void): void
     {
-        return new Promise((resolve, reject) => {
-            this.actions.set(action, cb)
-        })
+        this.actions.set(action, cb)
     }
 
     public getAdress() : { port: number, address: string }
@@ -159,7 +159,8 @@ export default class Websocket {
         }
     }
 
-    onError(cb: (error: Error) => void): any {
+    onError(cb: (error: Error) => void): any
+    {
         this.errorCallback = cb
     }
 }

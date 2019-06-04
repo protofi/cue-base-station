@@ -24,11 +24,11 @@ export default class BaseStation
 
     constructor (pubsub: PubSub, websocket: Websocket, bluetooth: Bluetooth)
     {
-        this.pubSub = pubsub
-        this.pubSub.setDeviceUUID(this.getId())
+        this.pubSub     = pubsub
+        this.websocket  = websocket
+        this.bluetooth  = bluetooth
 
-        this.websocket = websocket
-        this.bluetooth = bluetooth
+        this.pubSub.setDeviceUUID(this.getId())
 
         this.mountHooks()
     }
@@ -76,7 +76,7 @@ export default class BaseStation
 
         this.websocket.on(WSActions.PAIRING_MODE, () => {
             
-            console.log("PAIRING MODE activated")
+            console.log('PAIRING MODE activated')
 
             this.bluetooth.scan(new PairingScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
                 
@@ -104,7 +104,7 @@ export default class BaseStation
         
         this.websocket.on(WSActions.CALIBRATION_MODE, (payload) => {
             
-            console.log("CALIBRATIONS MODE activated")
+            console.log('CALIBRATIONS MODE activated')
             
             this.calibrationReadings = []
 
@@ -131,26 +131,13 @@ export default class BaseStation
             }, [payload.sensorId])
         })
 
-        this.websocket.on(WSActions.CALIBRATION_PROBE, async (payload) => {
+        this.websocket.on(WSActions.CALIBRATION_PROBE, async payload => {
 
             try
             {
-                const sensor = this.bluetooth.getConnectedSensor()
-
                 await delay(5000)
 
-                const reading = await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
-
-                this.websocket.send({
-                    action  : WSActions.CALIBRATION_PROBE,
-                    payload : {
-                        reading     : reading.readUInt8(0),
-                        probeIndex  : payload.probeIndex,
-                        sensorId    : sensor.getId(),
-                    }
-                }, payload.address)
-
-                this.calibrationReadings.push(reading)
+                await this.probeAudioLevel(payload)
             }
             catch(e)
             {
@@ -161,19 +148,7 @@ export default class BaseStation
 
             try
             {
-                console.log('READINGS', this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
-
-                const avgReading = mean(this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
-
-                console.log('AVG READING', avgReading)
-
-                const sensor = this.bluetooth.getConnectedSensor()
-    
-                await sensor.writeValue(avgReading, CHAR.THRESHOLD_LEVEL)
-
-                await this.bluetooth.disconnectSensor()
-
-                this.calibrationReadings = []
+               await this.concludeCalibration()
             }
             catch(e)
             {
@@ -181,6 +156,20 @@ export default class BaseStation
             }
 
             this.bluetooth.scan()
+        })
+
+        this.websocket.on(WSActions.CONNECT, async payload => {
+
+            this.bluetooth.scan(null, async (sensor: Sensor) => {
+
+                await sensor.connect()
+
+                console.log("ADVERTISMENT", sensor.getAdvertisment())
+
+                await sensor.disconnect()
+
+                this.bluetooth.scan()
+            })
         })
 
         this.websocket.on(WSActions.CALIBRATION_END, async () => {
@@ -211,6 +200,55 @@ export default class BaseStation
 
         this.websocket.onError(this.errorHandler.bind(this))
         this.pubSub.onError(this.errorHandler.bind(this))
+    }
+
+    private async probeAudioLevel(payload : {[key:string]:any}) : Promise<void>
+    {
+        try
+        {
+            const sensor = this.bluetooth.getConnectedSensor()
+
+            const reading = await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
+
+            this.websocket.send({
+                action  : WSActions.CALIBRATION_PROBE,
+                payload : {
+                    reading     : reading.readUInt8(0),
+                    probeIndex  : payload.probeIndex,
+                    sensorId    : sensor.getId(),
+                }
+            }, payload.address)
+
+            this.calibrationReadings.push(reading)
+        }
+        catch(e)
+        {
+            console.log('ERROR', e)
+        }
+    }
+
+    private async concludeCalibration() : Promise<void>
+    {
+        try
+        {
+            console.log('READINGS', this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
+
+            const avgReading = mean(this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
+
+            console.log('AVG READING', avgReading)
+
+            const sensor = this.bluetooth.getConnectedSensor()
+
+            await sensor.writeValue(avgReading, CHAR.THRESHOLD_LEVEL)
+
+            await this.bluetooth.disconnectSensor()
+
+            this.calibrationReadings = []
+        }
+        catch(e)
+        {
+            console.log('ERROR', e)
+        }
     }
 
     private errorHandler(error: Error): void
