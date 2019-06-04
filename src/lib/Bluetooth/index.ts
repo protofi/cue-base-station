@@ -118,7 +118,6 @@ export default class BluetoothImpl implements Bluetooth
 
 	public disconnectSensor(): void
 	{
-		console.log('DISCONNECTING SENSOR FROM BLE')
 		this.scannerStrategy.disconnectSensor()
 	}
 
@@ -133,6 +132,8 @@ export default class BluetoothImpl implements Bluetooth
 
 	public async scan(scannerStrategy?: ScannerStrategy, deviceDiscoveredCallback?: (sensor: Sensor) => void, scanFilter: Array<string> = []) : Promise<void>
 	{
+		try{ await this.disconnectSensor() } catch(e){}
+
 		this.scannerStrategy = (scannerStrategy) ? scannerStrategy : this.defaultDiscoverStrategy
 		this.deviceDiscoveredCallback = (deviceDiscoveredCallback) ? deviceDiscoveredCallback : this.defaultDiscoverCallback
 
@@ -143,8 +144,6 @@ export default class BluetoothImpl implements Bluetooth
 
 		if(this.scanning)
 			await this.stopScanning()
-
-		console.log('LOOKING FOR', scanFilter)
 
 		Noble.startScanning(scanFilter, true)
 		this.scanning = true

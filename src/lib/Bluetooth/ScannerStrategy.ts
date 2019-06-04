@@ -5,7 +5,7 @@ import { Bluetooth, CUE_SENSOR_NAME } from '.';
 export default interface ScannerStrategy
 {
 	onDiscover(peripheral: Noble.Peripheral): Promise<Sensor>
-	disconnectSensor(): void
+	disconnectSensor(): Promise<void>
 	getConnectedSensor(): Sensor
 	connectToSensor(sensor: Sensor): Promise<void>
 }

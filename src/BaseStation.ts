@@ -1,5 +1,5 @@
 import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
-import Websocket, { WebsocketActions } from "./lib/Websocket";
+import Websocket, { WebsocketActions as WSActions } from "./lib/Websocket";
 import SensorImpl, { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
 import PubSub, { Topics } from "./lib/PubSub";
 import { Bluetooth } from "./lib/Bluetooth";
@@ -9,8 +9,8 @@ import { mean } from 'lodash'
 enum TIMER {
     PAIRING = 'pairing'
 }
-export default class BaseStation {
-    
+export default class BaseStation
+{
     private pubSub: PubSub
     private websocket: Websocket
     private bluetooth: Bluetooth
@@ -79,23 +79,25 @@ export default class BaseStation {
 			this.bluetooth.scan()
         })
 
-        this.websocket.on(WebsocketActions.CONNECT, () => {
+        this.websocket.on(WSActions.CONNECT, () => {
             
             this.bluetooth.scan(null, async (sensor: Sensor) => {
                 
                 await sensor.connect()
-                
+
                 const threshold = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
                 
                 await sensor.writeValue(100, CHAR.THRESHOLD_LEVEL)
 
                 const threshold2 = await sensor.readCharacteristic(CHAR.THRESHOLD_LEVEL)                
 
-                console.log('TRHESHOLDS', threshold, threshold2)
+                console.log('TRHESHOLDS', threshold.readUInt8(0), threshold2.readUInt8(0))
+
+                await sensor.disconnect()
             })
         })
 
-        this.websocket.on(WebsocketActions.PAIRING_MODE, () => {
+        this.websocket.on(WSActions.PAIRING_MODE, () => {
             
             console.log("PAIRING MODE activated")
 
@@ -123,9 +125,11 @@ export default class BaseStation {
             }, 30)
         })
         
-        this.websocket.on(WebsocketActions.CALIBRATION_MODE, (payload) => {
+        this.websocket.on(WSActions.CALIBRATION_MODE, (payload) => {
             
             console.log("CALIBRATIONS MODE activated")
+            
+            this.calibrationReadings = []
 
             console.log('SENSOR ID', payload.sensorId)
 
@@ -137,7 +141,7 @@ export default class BaseStation {
                 	await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
 
                     this.websocket.send({
-                        action  : WebsocketActions.CALIBRATION_MODE,
+                        action  : WSActions.CALIBRATION_MODE,
                         payload : {
                             sensorId : sensor.getId()
                         }
@@ -150,21 +154,22 @@ export default class BaseStation {
             }, [payload.sensorId])
         })
 
-        this.websocket.on(WebsocketActions.CALIBRATION_PROBE, async (payload) => {
+        this.websocket.on(WSActions.CALIBRATION_PROBE, async (payload) => {
 
             try
             {
                 const sensor = this.bluetooth.getConnectedSensor()
 
                 await delay(5000)
-                            
+
                 const reading = await sensor.readCharacteristic(CHAR.MAX_AUDIO_LEVEL)
 
                 this.websocket.send({
-                    action  : WebsocketActions.CALIBRATION_PROBE,
+                    action  : WSActions.CALIBRATION_PROBE,
                     payload : {
-                        sensor  : sensor.getId(),
-                        reading : reading.readUInt8(0),
+                        reading     : reading.readUInt8(0),
+                        probeIndex  : payload.probeIndex,
+                        sensorId    : sensor.getId(),
                     }
                 }, payload.address)
 
@@ -174,19 +179,22 @@ export default class BaseStation {
             {
                 console.log('ERROR', e)
             }
-        })
 
-        this.websocket.on(WebsocketActions.CALIBRATION_END, async () => {
+            if(payload.probeIndex < payload.probeCount) return
 
             try
             {
-                const avgReading = mean(this.calibrationReadings)
+                console.log('READINGS', this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
+
+                const avgReading = mean(this.calibrationReadings.map(buffer => buffer.readUInt8(0)))
+
+                console.log('AVG READING', avgReading)
 
                 const sensor = this.bluetooth.getConnectedSensor()
     
-                sensor.writeValue(avgReading, CHAR.THRESHOLD_LEVEL)
-                
-                this.bluetooth.disconnectSensor()
+                await sensor.writeValue(avgReading, CHAR.THRESHOLD_LEVEL)
+
+                await this.bluetooth.disconnectSensor()
 
                 this.calibrationReadings = []
             }
@@ -198,16 +206,31 @@ export default class BaseStation {
             this.bluetooth.scan()
         })
 
-        this.websocket.on(WebsocketActions.SYNC_SENSORS, (payload: any) => {
+        this.websocket.on(WSActions.CALIBRATION_END, async () => {
+
+            try
+            {
+                await this.bluetooth.disconnectSensor()
+                this.calibrationReadings = []
+            }
+            catch(e)
+            {
+                console.log('ERROR', e)
+            }
+
+            this.bluetooth.scan()
+        })
+
+        this.websocket.on(WSActions.SYNC_SENSORS, (payload: any) => {
             console.log('SYNC SENSORS', payload)
             this.bluetooth.syncSensors(payload.sensors)
         })
 
-        this.websocket.on(WebsocketActions.DISCONNECT_SENSOR,   () => this.bluetooth.disconnectSensor())
-        this.websocket.on(WebsocketActions.LISTENING_MODE,      () => this.bluetooth.scan())
-        this.websocket.on(WebsocketActions.FORGET_SENSORS,      () => this.bluetooth.forgetSensors())
-        this.websocket.on(WebsocketActions.DEBUG,               () => this.bluetooth.toggleDebug())
-        this.websocket.on(WebsocketActions.STOP,                () => this.bluetooth.stopScanning())
+        this.websocket.on(WSActions.DISCONNECT_SENSOR,   () => this.bluetooth.disconnectSensor())
+        this.websocket.on(WSActions.LISTENING_MODE,      () => this.bluetooth.scan())
+        this.websocket.on(WSActions.FORGET_SENSORS,      () => this.bluetooth.forgetSensors())
+        this.websocket.on(WSActions.DEBUG,               () => this.bluetooth.toggleDebug())
+        this.websocket.on(WSActions.STOP,                () => this.bluetooth.stopScanning())
 
         this.websocket.onError(this.errorHandler.bind(this))
         this.pubSub.onError(this.errorHandler.bind(this))

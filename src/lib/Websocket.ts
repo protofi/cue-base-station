@@ -99,9 +99,9 @@ export default class Websocket {
 
                 const cueMessage = JSON.parse(message.utf8Data) as CueWebsocketMessage
 
-                cueMessage.payload.address = connectionAddress
+                console.log('WEBSOCKET MESSAGE RECEIVED', cueMessage)
 
-                console.log('WEBSOCKET MESSAGE', cueMessage)
+                cueMessage.payload.address = connectionAddress
 
                 const action = this.actions.get(cueMessage.action)
 

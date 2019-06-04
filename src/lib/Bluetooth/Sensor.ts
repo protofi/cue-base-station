@@ -39,7 +39,6 @@ export interface Sensor {
 }
 export default class SensorImpl implements Sensor {
 	
-    private id				: string
 	private rssi			: number
 
     private peripheral		: Noble.Peripheral
@@ -55,7 +54,6 @@ export default class SensorImpl implements Sensor {
 
     constructor(peripheral: Noble.Peripheral)
     {
-        this.id 		= peripheral.id
 		this.rssi 		= peripheral.rssi
         this.peripheral = peripheral
 	}
@@ -86,6 +84,8 @@ export default class SensorImpl implements Sensor {
 				this.state = this.peripheral.state as STATE
 	
 			}, 10)
+
+			if((this.state == STATE.CONNECTED || this.state == STATE.CONNECTING)) return resolve()
 
 			this.peripheral.connect((error) => {
 				if(error) reject(error)
