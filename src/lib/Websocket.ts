@@ -13,33 +13,40 @@ export default class Websocket {
 
     private maxConnectionAttempts = 10
     private connectionAttempCount = 0
-    
-    private connectedCallback: () => void = () => console.log('CONNECTED', this.port)
+
+    private connectedPromiseResolution: (value?: void | PromiseLike<void>) => void
+    private connectedPromiseRejection: (reason?: any) => void
+
     private errorCallback: (error: Error) => void = console.log
 
     private actions: Map<WebsocketActions, (payload?:{}) => void> = new Map()
 
     constructor () {}
 
-    public connect(cb: () => void) : void
+    public connect() : Promise<void>
     {
-        this.connectedCallback = cb
+        return new Promise((resolve, reject) => {
 
-        if(this.server) this.server.close()
+            this.connectedPromiseResolution = resolve
+            this.connectedPromiseRejection  = reject
 
-        this.server = http.createServer((req, res) => {
-            res.write('Hello')
-            res.end()
+            if(this.server) this.server.close()
+
+            this.server = http.createServer((req, res) => {
+                res.write('Hello')
+                res.end()
+            })
+    
+            this.socket = new WebSocket.server({
+                httpServer: this.server,
+                autoAcceptConnections: false
+            })
+    
+            this.mountHooks()
+    
+            this.server.listen(this.port)
+    
         })
-
-        this.socket = new WebSocket.server({
-            httpServer: this.server,
-            autoAcceptConnections: false
-        })
-
-        this.mountHooks()
-
-        this.server.listen(this.port)
     }
 
     private reconnect(error: Error): void
@@ -48,7 +55,8 @@ export default class Websocket {
 
         if(this.connectionAttempCount > this.maxConnectionAttempts)
         {
-            this.errorCallback(error)
+            this.connectedPromiseRejection(error)
+
             return
         }
 
@@ -59,6 +67,7 @@ export default class Websocket {
     private mountHooks(): void 
     {
         this.server.on('listening', () => {
+            console.log('WEBSOKCET CONNECTED')
             this.connected()
         })
 
@@ -68,6 +77,9 @@ export default class Websocket {
             {
                 console.log('ERROR WEBSOCKET')
                 this.errorCallback(error)
+                
+                this.connectedPromiseRejection(error)
+                
                 return
             }
 
@@ -151,7 +163,7 @@ export default class Websocket {
 
     public connected(): void 
     {
-        this.connectedCallback()
+        this.connectedPromiseResolution()
     }
 
     onError(cb: (error: Error) => void): any {

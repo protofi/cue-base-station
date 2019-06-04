@@ -1,23 +1,25 @@
 import * as fs from 'fs'
 import * as mqtt from 'mqtt' 
 import * as jwt from 'jsonwebtoken'
+import { resolve } from 'dns';
+import { rejects } from 'assert';
 
 export enum Topics {
+    UPDATE_WEBSOCKET    = "update-websocket",
+    NOTIFICATION        = "notification",
+    CALIBRATION         = "calibration",
     INITIALIZE          = "initialize",
     NEW_SENSOR          = "new-sensor",
-    NOTIFICATION        = "notification",
-    UPDATE_WEBSOCKET    = "update-websocket",
     HEARTBEAT           = "heartbeat",
-    CALIBRATION         = "calibration",
 }
 
 export enum Errors {
-    NOT_AUTHORIZED = 'Not authorized',
-    BAD_USER_PASS = 'Bad username or password'
+    NOT_AUTHORIZED  = 'Not authorized',
+    BAD_USER_PASS   = 'Bad username or password'
 
 }
-export default class PubSub {
-   
+export default class PubSub
+{
     private privateKeyFile: string      = './data/rsa-priv.pem'
 
     private mqttBridgeHostname: string  = 'mqtt.googleapis.com'
@@ -36,7 +38,8 @@ export default class PubSub {
     private expTime: number
     private client: mqtt.MqttClient
 
-    private connectedCallback: Function = () => {}
+	private connectedPromiseResolution:  (value?: void | PromiseLike<void>) => void
+
     private errorCallback: (error: Error) => void = console.log
 
     constructor(privateKeyFile?: string) {
@@ -56,27 +59,15 @@ export default class PubSub {
 
         this.client.on('error', (error: Error) => {
             
-            if(error.message.includes(Errors.BAD_USER_PASS) || error.message.includes(Errors.BAD_USER_PASS))
+            if(error.message.includes(Errors.BAD_USER_PASS) || error.message.includes(Errors.NOT_AUTHORIZED))
             {
                 console.log('RE-AUTH')
-                this.connect(this.connectedCallback)
+                this.connect()
                 return
             }
 
             this.errorCallback(error)
         })
-
-        // this.client.on('packetsend', message => {
-        //     console.log('packetsend', message.cmd, message.messageId)
-        // })
-
-        // this.client.on('packetreceive', message => {
-        //     console.log('packetreceive', message.cmd, message.messageId)
-        // })
-
-        // this.client.on('message', (topic, message: string, packet) => {
-        //     console.log('message received: ', Buffer.from(message, 'base64').toString('ascii'))
-        // })
     }
 
     // Create a Cloud IoT Core JWT for the given project id, signed with the given private key.
@@ -112,30 +103,33 @@ export default class PubSub {
         console.log('RE-AUTH')
 
         //reconnect
-        this.connect(this.connectedCallback)
+        this.connect()
     }
 
-    public connect(cb: Function) : void
+    public connect() : Promise<void>
     {
-        this.connectedCallback = cb
+        return new Promise((resolve, rejects) => {
 
-        const mqttClientId = `projects/${this.projectId}/locations/${this.cloudRegion}/registries/${this.registryId}/devices/${this.deviceUUID}`
+            this.connectedPromiseResolution = resolve
 
-        let connectionArgs = {
-            host: this.mqttBridgeHostname,
-            port: this.mqttBridgePort,
-            clientId: mqttClientId,
-            username: 'unused',
-            password: this.createJwt(this.projectId, this.privateKeyFile, this.algorithm),
-            protocol: 'mqtts',
-            secureProtocol: 'TLSv1_2_method'
-        }
+            const mqttClientId = `projects/${this.projectId}/locations/${this.cloudRegion}/registries/${this.registryId}/devices/${this.deviceUUID}`
 
-        if(this.client) this.client.end() //close previous connection if it exist
+            let connectionArgs = {
+                host: this.mqttBridgeHostname,
+                port: this.mqttBridgePort,
+                clientId: mqttClientId,
+                username: 'unused',
+                password: this.createJwt(this.projectId, this.privateKeyFile, this.algorithm),
+                protocol: 'mqtts',
+                secureProtocol: 'TLSv1_2_method'
+            }
 
-        this.client = mqtt.connect(connectionArgs)
+            if(this.client) this.client.end() //close previous connection if it exist
 
-        this.mountHooks()
+            this.client = mqtt.connect(connectionArgs)
+    
+            this.mountHooks()
+        })
     }
 
     private connected(success: any)
@@ -146,7 +140,7 @@ export default class PubSub {
             return
         }
 
-        this.connectedCallback()
+        this.connectedPromiseResolution()
     }
 
     public publish(topic: string, payload: {} = {}): Promise<void>
