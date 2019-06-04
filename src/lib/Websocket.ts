@@ -127,7 +127,6 @@ export default class Websocket {
     {
         return new Promise((resolve, reject) => {
             this.actions.set(action, cb)
-
         })
     }
 
