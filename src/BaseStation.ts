@@ -9,6 +9,10 @@ import { mean } from 'lodash'
 enum TIMER {
     PAIRING = 'pairing'
 }
+
+export enum ERROR {
+    SENSOR_CONNECTION = 'Something went wrong connecting or disconnecting a sensor'
+}
 export default class BaseStation
 {
     private pubSub: PubSub
@@ -102,7 +106,7 @@ export default class BaseStation
             }, 30)
         })
         
-        this.websocket.on(WSActions.CALIBRATION_MODE, (payload) => {
+        this.websocket.on(WSActions.CALIBRATION_MODE, payload => {
             
             console.log('CALIBRATIONS MODE activated')
             
@@ -164,7 +168,7 @@ export default class BaseStation
 
                 await sensor.connect()
 
-                console.log("ADVERTISMENT", sensor.getAdvertisment())
+                await delay(2000)
 
                 await sensor.disconnect()
 
@@ -275,27 +279,3 @@ export default class BaseStation
         }
     }
 }
-
-process
-.on('unhandledRejection', (reason, p) => {
-    console.log('')
-    console.log('**********************************************')
-    console.log('')
-    console.error('Unhandled Rejection of Promise')
-    console.error(reason)
-    console.error(p)
-    console.log('')
-    console.log('**********************************************')
-    console.log('')
-})
-.on('uncaughtException', error => {
-    console.log('')
-    console.log('**********************************************')
-    console.log('')
-    console.error('Uncaught Exception thrown')
-    console.error(error.message)
-    console.error(error)
-    console.log('')
-    console.log('**********************************************')
-    console.log('')
-})

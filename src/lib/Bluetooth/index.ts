@@ -61,9 +61,6 @@ export default class BluetoothImpl implements Bluetooth
 		})
 		
 		const sensorIds = fs.readFileSync('./data/known-sensors.json', { encoding : 'utf8'})
-		
-		console.log('KNOWN SENSORS', sensorIds)
-
 		this.knownSensors = (sensorIds) ? new Set(Array.from(JSON.parse(sensorIds))) : new Set()
 	}
 
@@ -95,7 +92,6 @@ export default class BluetoothImpl implements Bluetooth
 
 					exec('sh ./persist-known-sensors.sh', (error: string) => {
 						if (error) return reject('SENSOR COULD NOT BE REMEMBERED: \n' + error)
-
 						resolve()
 					})
 				}

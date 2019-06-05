@@ -1,4 +1,6 @@
 import * as Noble from 'noble'
+import { ERROR } from '../../BaseStation';
+import delay from '../../util/delay';
 
 export enum TRIGGER {
 	AUD 	= '4f49445541',
@@ -39,23 +41,29 @@ export interface Sensor {
 }
 export default class SensorImpl implements Sensor {
 	
-	private rssi			: number
+	private rssi: number
 
-    private peripheral		: Noble.Peripheral
+    private peripheral: Noble.Peripheral
 
-	private characteristics	: Map<string, Noble.Characteristic> = new Map()
-	private services 		: Map<string, Noble.Service> = new Map()
+	private characteristics		: Map<string, Noble.Characteristic> = new Map()
+	private services 			: Map<string, Noble.Service> = new Map()
 
-	private state			: STATE
-	private stateChecker	: NodeJS.Timeout
+	private connectionChecker 	: NodeJS.Timeout
+	private connectionTimeout	: number = 10000
 
-	private connectedPromiseResolution:  (value?: void | PromiseLike<void>) => void
-	private disconnectPromiseResolution: (value?: void | PromiseLike<void>) => void
+	private connectedPromiseResolution	: (value?: void | PromiseLike<void>) => void
+	private connectedPromiseRejection	: (reason?: any) => void
+	private disconnectPromiseResolution	: (value?: void | PromiseLike<void>) => void
+	private disconnectPromiseRejection	: (reason?: any) => void
+
+	private oldState: STATE
+
+	private stateChecker: NodeJS.Timeout
 
     constructor(peripheral: Noble.Peripheral)
     {
 		this.rssi 		= peripheral.rssi
-        this.peripheral = peripheral
+		this.peripheral = peripheral
 	}
 	
 	public async touch(): Promise<void>
@@ -71,20 +79,26 @@ export default class SensorImpl implements Sensor {
 		this.peripheral.once('connect',     this.onConnect.bind(this))
 		this.peripheral.once('disconnect',  this.onDisconnect.bind(this))
 
+		this.stateChecker = setInterval(() => {
+			if(this.oldState != this.state)
+			{
+				this.oldState = this.state
+				this.onStateChange(this.state)
+			}
+		}, 5)
+
 		return new Promise((resolve, reject) => {
+
 			this.connectedPromiseResolution = resolve
+			this.connectedPromiseRejection = reject
 
 			console.log('CONNECTING TO SENSOR')
 
-			this.stateChecker = setInterval(() => {
+			this.connectionChecker = setTimeout(() => {
+				if(this.peripheral.state != STATE.CONNECTED) this.connectedPromiseRejection(ERROR.SENSOR_CONNECTION)
+			}, this.connectionTimeout)
 
-				if(this.state != this.peripheral.state)
-					this.onStateChange(this.peripheral.state as STATE)
-	
-				this.state = this.peripheral.state as STATE
-	
-			}, 10)
-
+			//if sensor is already connected or connecting return
 			if((this.state == STATE.CONNECTED || this.state == STATE.CONNECTING)) return resolve()
 
 			this.peripheral.connect((error) => {
@@ -93,23 +107,32 @@ export default class SensorImpl implements Sensor {
 		})
 	}
 
+	private get state(): STATE
+	{
+        return this.peripheral.state as STATE
+    }
+
 	private onConnect()
 	{
-		console.log('SENSOR IS CONNECTED')
-
 		if(this.connectedPromiseResolution)
 			this.connectedPromiseResolution()
 
-		delete this.connectedPromiseResolution
+		console.log('SENSOR IS CONNECTED', this.state)
+
+		clearTimeout(this.connectionChecker)
 	}
 
     public async disconnect(): Promise<void>
     {
 		return new Promise((resovle, reject) => {
 			this.disconnectPromiseResolution = resovle
+			this.disconnectPromiseRejection  = reject
+
+			this.connectionChecker = setTimeout(() => {
+				if(this.peripheral.state != STATE.DISCONNECTED) this.disconnectPromiseRejection(ERROR.SENSOR_CONNECTION)
+			}, this.connectionTimeout)
 
 			this.peripheral.disconnect()
-			this.peripheral.removeAllListeners()
 		})
 	}
 
@@ -187,21 +210,22 @@ export default class SensorImpl implements Sensor {
 		return this.characteristics
 	}
 
-    private onDisconnect()
+    private onDisconnect() : void
     {
-		clearInterval(this.stateChecker)
-		
 		if(this.disconnectPromiseResolution)
 			this.disconnectPromiseResolution()
 
-		delete this.disconnectPromiseResolution
+		this.peripheral.removeAllListeners()
+
+		console.log('SENSOR IS DISCONNECTED', this.state)
+
+		clearTimeout(this.connectionChecker)
+		clearInterval(this.stateChecker)
 	}
 
-	private onStateChange(state: STATE)
+	private onStateChange(state: STATE) : void
 	{
-		if(this.peripheral.state == STATE.DISCONNECTED) this.onDisconnect()
-
-		console.log('SENSOR STATE CHANGED', `(${state})`)		
+		console.log('SENSOR STATE CHANGED', `(${state})`)	
 	}
 
 	public getAdvertisment(): Noble.Advertisement
