@@ -1,6 +1,6 @@
 import { CalibrationScannerStrategy, PairingScannerStrategy } from "./lib/Bluetooth/ScannerStrategy";
 import Websocket, { WebsocketActions as WSActions } from "./lib/Websocket";
-import SensorImpl, { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
+import { Sensor, CHAR } from "./lib/Bluetooth/Sensor";
 import PubSub, { Topics } from "./lib/PubSub";
 import { Bluetooth } from "./lib/Bluetooth";
 import delay from "./util/delay";
@@ -111,8 +111,6 @@ export default class BaseStation
             console.log('CALIBRATIONS MODE activated')
             
             this.calibrationReadings = []
-
-            console.log('SENSOR ID', payload.sensorId)
 
             this.bluetooth.scan(new CalibrationScannerStrategy(this.bluetooth), async (sensor: Sensor) => {
 
@@ -255,19 +253,46 @@ export default class BaseStation
         }
     }
 
-    private errorHandler(error: Error): void
+    public errorHandler(error: Error): void
     {
+        if(error.message.includes(ERROR.SENSOR_CONNECTION))
+        {
+            const addresses: string[] = Array.from(this.websocket.getConnections().keys())
+            
+            //send error notice to all connections
+            Promise.all(
+                addresses.map((address: string) => {
+                    return this.websocket.send({
+                            action : WSActions.ERROR,
+                            payload : {
+                                'message' : error.message
+                            }
+                        }, address)
+                })
+            ).then(() => {
+                console.log('******************************************************************')
+                console.log('********************* REBOOTING BASE STATION *********************')
+                console.log('******************************************************************')
+
+                const exec = require('child_process').exec
+
+                exec('sh ./reboot.sh', (error: string) => {
+                    if(error) throw Error(error)
+                })
+            })
+        }
+
         console.log('ERROR', error.message)
     }
 
-    private startTimer(name: TIMER, callback: () => void, seconds: number)
+    private startTimer(name: TIMER, callback: () => void, seconds: number): void
     {
         const timer = setTimeout(callback, seconds * 1000)
 
         this.timers.set(name, timer)
     }
 
-    private clearTimer(name?: TIMER)
+    private clearTimer(name?: TIMER): void
     {
         const timer = (name) ? this.timers.get(name) : null
 

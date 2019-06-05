@@ -107,7 +107,7 @@ export default class BluetoothImpl implements Bluetooth
 		if(action) action()
 	}
 
-	public getConnectedSensor()
+	public getConnectedSensor(): Sensor
 	{
 		return this.scannerStrategy.getConnectedSensor()
 	}

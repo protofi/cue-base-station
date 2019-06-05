@@ -21,7 +21,7 @@ export default class Websocket {
     private connectedPromiseResolution:     (value?: void | PromiseLike<void>) => void
 	private connectedPromiseRejection:      (reason?: any) => void
 
-    constructor () {}
+    constructor() {}
 
     public connect() : Promise<void>
     {
@@ -120,6 +120,11 @@ export default class Websocket {
         })
     }
 
+    public getConnections(): Map<string, WebSocket.connection>
+    {
+        return this.connections
+    }
+
     public async send(message: CueWebsocketMessage, address: string): Promise<void>
     {
         return new Promise((resolve, reject) => {
@@ -177,6 +182,7 @@ export enum WebsocketActions {
     SYNC_SENSORS        = 'sync-sensors',
     DEBUG               = 'debug',
     STOP                = 'stop',
+    ERROR               = 'error'
 }
 
 export interface CueWebsocketMessage {
