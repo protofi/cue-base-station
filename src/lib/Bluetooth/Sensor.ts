@@ -35,13 +35,17 @@ export interface Sensor {
 	readCharacteristic(uuid: CHAR): Promise<Buffer>
 	writeValue(value: number, uuid: CHAR): Promise<void>
 	getRssi(): number
+	withinRange(): boolean
 	getId(): string
+	getBatteryLevel(): number
 	getTrigger(): string
 	getAdvertisment(): Noble.Advertisement
 }
 export default class SensorImpl implements Sensor {
 	
 	private rssi: number
+	
+	private lowerBoundRssi: number = -80
 
     private peripheral: Noble.Peripheral
 
@@ -184,26 +188,26 @@ export default class SensorImpl implements Sensor {
 		})
 	}
 
-	public async fetchAllServicesAndCharacteristics(): Promise<void>
-	{
-		return new Promise((resolve, reject) => {
+	// public async fetchAllServicesAndCharacteristics(): Promise<void>
+	// {
+	// 	return new Promise((resolve, reject) => {
 
-			console.log('FECTHING CHARACTERISTIC')
+	// 		console.log('FECTHING CHARACTERISTIC')
 
-			this.peripheral.discoverSomeServicesAndCharacteristics([], [], (
-				error: string,
-				services: Noble.Service[],
-				characteristics: Noble.Characteristic[]
-			) => {
-				if(error) return reject(error)
+	// 		this.peripheral.discoverSomeServicesAndCharacteristics([], [], (
+	// 			error: string,
+	// 			services: Noble.Service[],
+	// 			characteristics: Noble.Characteristic[]
+	// 		) => {
+	// 			if(error) return reject(error)
 				
-				console.log('SERVICE', services)
-				console.log('CHARACTERISTICS', characteristics)
+	// 			console.log('SERVICE', services)
+	// 			console.log('CHARACTERISTICS', characteristics)
 
-				resolve()
-			})
-		})
-	}
+	// 			resolve()
+	// 		})
+	// 	})
+	// }
 
 	public getCharacteristics(): Map<string, Noble.Characteristic>
 	{
@@ -296,8 +300,19 @@ export default class SensorImpl implements Sensor {
 		return this.rssi
 	}
 
+	public withinRange(): boolean
+	{
+		return this.rssi > this.lowerBoundRssi
+	}
+
 	public getId(): string
 	{
 		return this.getAdvertisment().serviceData[0].uuid
 	}
+
+	public getBatteryLevel(): number
+	{
+		return 4.14
+	}
+
 }

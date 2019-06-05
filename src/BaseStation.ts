@@ -67,13 +67,16 @@ export default class BaseStation
                 id : sensor.getId()
             })
 
-            await sensor.touch()
+            if(sensor.withinRange())
+            {
+                await sensor.touch()
 
-            this.pubSub.publish(Topics.HEARTBEAT, {
-                id              : sensor.getId(),
-                signal_strength : sensor.getRssi(),
-                battery_level   : Math.random()*100,
-            })
+                this.pubSub.publish(Topics.HEARTBEAT, {
+                    id              : sensor.getId(),
+                    signal_strength : sensor.getRssi(),
+                    battery_level   : sensor.getBatteryLevel(),
+                })
+            }
 
 			this.bluetooth.scan()
         })
@@ -95,7 +98,7 @@ export default class BaseStation
                 this.pubSub.publish(Topics.HEARTBEAT, {
                     id              : sensor.getId(),
                     signal_strength : sensor.getRssi(),
-                    battery_level   : Math.random()*100,
+                    battery_level   : sensor.getBatteryLevel(),
                 })
 
                 this.bluetooth.scan()
@@ -270,6 +273,7 @@ export default class BaseStation
                         }, address)
                 })
             ).then(() => {
+
                 console.log('******************************************************************')
                 console.log('********************* REBOOTING BASE STATION *********************')
                 console.log('******************************************************************')
